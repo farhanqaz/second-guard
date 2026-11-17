@@ -7,7 +7,7 @@ export PATH="$HOME/.foundry/bin:$PATH"
 
 BASE_RPC="https://sepolia.base.org"
 FAUCET_BASE_SEPOLIA="0x2afaFD298b23b62760711756088F75B7409f5967"
-AMOUNT="${1:-0.02ether}"
+AMOUNT="${1:-0.004ether}"
 
 set -a; source .env; set +a
 

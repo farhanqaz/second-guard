@@ -1,39 +1,40 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.29;
 
-import {IReactive} from "reactive-lib/interfaces/IReactive.sol";
-import {ISystemContract} from "reactive-lib/interfaces/ISystemContract.sol";
-import {AbstractReactive} from "reactive-lib/abstract-base/AbstractReactive.sol";
+import {AbstractReactive} from "reactive-lib-omni/base/AbstractReactive.sol";
+import {IReactive} from "reactive-lib-omni/interfaces/IReactive.sol";
+import {ISystemContract} from "reactive-lib-omni/interfaces/ISystemContract.sol";
 
-/// @notice Reactive contract on Lasna. Subscribes to Ping on the origin chain and fires a callback
-///         back to the destination chain, carrying the ping's timestamp and block so the loop can be measured.
-contract PingReactive is IReactive, AbstractReactive {
-    uint256 public originChainId;
-    uint256 public destinationChainId;
+/// @title PingReactive
+/// @notice Reactive contract on Lasna that subscribes to Ping on Base Sepolia and requests a callback
+///         back to the sink, carrying the ping timestamp and block so the loop can be measured.
+/// @dev Built against reactive-lib-omni. The legacy reactive-lib does not match Omni: its SYSTEM address,
+///      vm detection and Callback event path all differ, and the deprecated Callback event is rejected by
+///      the relay with "invalid payload format".
+contract PingReactive is AbstractReactive {
+    uint256 public immutable originChainId;
+    uint256 public immutable destinationChainId;
+    address public immutable deployer;
+
     address public sink;
     uint256 public handled;
+    uint64 public gasLimit = 400_000;
 
-    uint64 private constant GAS_LIMIT = 400_000;
-
-    constructor(
-        uint256 _originChainId,
-        uint256 _destinationChainId,
-        address _originContract,
-        uint256 _pingTopic,
-        address _sink
-    ) {
-        originChainId = _originChainId;
-        destinationChainId = _destinationChainId;
-        sink = _sink;
-
-        if (!vm) {
-            service.subscribe(
-                _originChainId, _originContract, _pingTopic, REACTIVE_IGNORE, REACTIVE_IGNORE, REACTIVE_IGNORE
-            );
-        }
+    constructor(uint256 originChainId_, uint256 destinationChainId_, address originContract_, uint256 topic0_)
+        payable
+    {
+        originChainId = originChainId_;
+        destinationChainId = destinationChainId_;
+        deployer = msg.sender;
+        SYSTEM.subscribe(originChainId_, originContract_, topic0_, REACTIVE_IGNORE, REACTIVE_IGNORE, REACTIVE_IGNORE);
     }
 
-    /// @notice Builds the callback payload. First slot stays address(0): the RVM ID is injected there.
+    /// @notice Set once after the sink exists: the sink needs this address, so the dependency is circular.
+    function setSink(address sink_) external {
+        require(msg.sender == deployer, "deployer only");
+        sink = sink_;
+    }
+
     function payload(uint256 nonce, uint256 pingTimestamp, uint256 pingBlock) public pure returns (bytes memory) {
         return
             abi.encodeWithSignature(
@@ -41,10 +42,18 @@ contract PingReactive is IReactive, AbstractReactive {
             );
     }
 
-    function react(LogRecord calldata log) external vmOnly {
-        uint256 nonce = log.topic_2;
-        (uint256 pingTimestamp, uint256 pingBlock) = abi.decode(log.data, (uint256, uint256));
+    function react(LogRecord calldata log_) external onlySystem {
+        uint256 nonce = log_.topic2;
+        (uint256 pingTimestamp, uint256 pingBlock) = abi.decode(log_.data, (uint256, uint256));
         handled += 1;
-        emit Callback(destinationChainId, sink, GAS_LIMIT, payload(nonce, pingTimestamp, pingBlock));
+        if (sink == address(0)) return;
+        SYSTEM.requestCallbackV_1_0(
+            ISystemContract.CallbackConfiguration_V_1_0({
+                chainId: destinationChainId,
+                recipient: sink,
+                gasLimit: gasLimit,
+                payload: payload(nonce, pingTimestamp, pingBlock)
+            })
+        );
     }
 }

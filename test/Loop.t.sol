@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.29;
 
 import {Test} from "forge-std/Test.sol";
 import {PingOrigin} from "../src/PingOrigin.sol";
 import {PongSink} from "../src/PongSink.sol";
-import {PingReactive} from "../src/PingReactive.sol";
+import {IPayable} from "reactive-lib-omni/interfaces/IPayable.sol";
+import {AbstractPayer} from "reactive-lib-omni/base/AbstractPayer.sol";
 
 contract LoopTest is Test {
     PingOrigin origin;
     PongSink sink;
 
+    address payable constant PROXY = payable(address(0xBEEF));
+    address constant REACTIVE = address(0xCAFE);
+
     function setUp() public {
         origin = new PingOrigin();
-        sink = new PongSink(address(this));
+        sink = new PongSink(IPayable(PROXY), REACTIVE);
     }
 
     function testOriginEmitsPing() public {
@@ -21,26 +25,31 @@ contract LoopTest is Test {
         origin.ping(7);
     }
 
-    function testSinkAcceptsAuthorizedCallback() public {
+    function testSinkAcceptsProxyOnly() public {
         vm.expectEmit(true, true, true, true, address(sink));
-        emit PongSink.Pong(7, 111, 222, block.timestamp, block.number);
-        sink.pong(address(this), 7, 111, 222);
+        emit PongSink.Pong(7, 111, 222, block.timestamp, block.number, REACTIVE);
+        vm.prank(PROXY);
+        sink.pong(REACTIVE, 7, 111, 222);
     }
 
     function testSinkRejectsStranger() public {
-        vm.prank(address(0xBEEF));
-        vm.expectRevert("Authorized sender only");
-        sink.pong(address(this), 7, 111, 222);
+        vm.prank(address(0x1234));
+        vm.expectRevert(abi.encodeWithSelector(AbstractPayer.NotAuthorized.selector, address(0x1234), PROXY));
+        sink.pong(REACTIVE, 7, 111, 222);
+    }
+
+    function testSinkRejectsWrongReactive() public {
+        vm.prank(PROXY);
+        vm.expectRevert();
+        sink.pong(address(0xDEAD), 7, 111, 222);
     }
 
     function testPayloadLayout() public {
-        // PingReactive cannot be constructed on a normal EVM (it needs the system contract),
-        // so the payload builder is checked through a minimal harness with the same code.
         PayloadHarness h = new PayloadHarness();
         bytes memory p = h.payload(7, 1_700_000_000, 12_345);
         (address first, uint256 nonce, uint256 ts, uint256 blk) =
             abi.decode(slice4(p), (address, uint256, uint256, uint256));
-        assertEq(first, address(0), "first slot must be address(0) for RVM ID injection");
+        assertEq(first, address(0), "first slot must be address(0) for the injected sender");
         assertEq(nonce, 7);
         assertEq(ts, 1_700_000_000);
         assertEq(blk, 12_345);

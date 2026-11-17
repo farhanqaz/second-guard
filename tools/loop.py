@@ -39,29 +39,41 @@ def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, **kw)
 
 
-def sh(*args, json_out=False):
-    cmd = [str(FOUNDRY / "forge")] + list(args) if args[0] == "forge" else [str(FOUNDRY / args[0])] + list(args[1:])
+def sh(binary, *args, json_out=False):
+    cmd = [str(FOUNDRY / binary)] + list(args)
     p = run(cmd)
     if p.returncode != 0:
-        raise SystemExit(f"command failed: {' '.join(cmd)}\n{p.stdout}\n{p.stderr}")
+        # never let the key reach a log: the argv carries it, the message must not
+        safe = " ".join(cmd).replace(PK, "<redacted>")
+        raise SystemExit(f"command failed: {safe}\n{p.stdout}\n{p.stderr}")
     return json.loads(p.stdout) if json_out else p.stdout
 
 
+def cast_list(*args):
+    """cast --json wraps results in {success, data, errors}; unwrap them."""
+    raw = sh("cast", *args, json_out=True)
+    if isinstance(raw, dict) and "data" in raw:
+        if not raw.get("success"):
+            raise RuntimeError(json.dumps(raw.get("errors"))[:300])
+        return raw["data"] or []
+    return raw
+
+
 def create(contract, rpc, args=(), value=None):
-    cmd = ["forge", "create", contract, "--rpc-url", rpc, "--private-key", PK, "--json"]
+    cmd = ["create", contract, "--rpc-url", rpc, "--private-key", PK, "--broadcast", "--json"]
     if args:
         cmd += ["--constructor-args", *args]
     if value:
         cmd += ["--value", value]
-    out = sh(*cmd, json_out=True)
+    out = sh("forge", *cmd, json_out=True)
     return out["deployedTo"], out["transactionHash"]
 
 
 def send(sig_args, rpc, value=None):
-    cmd = ["cast", "send", *sig_args, "--rpc-url", rpc, "--private-key", PK, "--json"]
+    cmd = ["send", *sig_args, "--rpc-url", rpc, "--private-key", PK, "--json"]
     if value:
         cmd += ["--value", value]
-    return sh(*cmd, json_out=True)
+    return sh("cast", *cmd, json_out=True)
 
 
 def main():
@@ -83,7 +95,7 @@ def main():
         )
         print("PingReactive    ", rc, "tx", rc_tx)
         # fund the reactive contract so it can pay for event delivery and callback gas
-        fund = send([rc, "--value", "0.05ether"], LASNA_RPC)
+        fund = send([rc, "--value", "0.02ether"], LASNA_RPC)
         print("fund rc         ", fund.get("transactionHash"))
 
     nonce = int(time.time()) % 1_000_000
@@ -102,12 +114,20 @@ def main():
 
     deadline = time.time() + 180
     found = None
+    scanned_to = ping_block - 1
     while time.time() < deadline:
-        logs = sh(
-            "cast", "logs", "--address", sink, "--from-block", str(ping_block), "--to-block", "latest",
-            "--rpc-url", BASE_RPC, "--json",
-        )
-        entries = json.loads(logs) if isinstance(logs, str) else logs
+        head = int(sh("cast", "block-number", "--rpc-url", BASE_RPC).strip()) - 2
+        entries = []
+        start = max(scanned_to + 1, ping_block)
+        # Base Sepolia caps eth_getLogs at a 200 block range, and makes 5 blocks a second
+        while start <= head:
+            end = min(start + 199, head)
+            entries += cast_list(
+                "logs", "--address", sink, "--from-block", str(start), "--to-block", str(end),
+                "--rpc-url", BASE_RPC, "--json",
+            )
+            start = end + 1
+        scanned_to = head
         for e in entries:
             d = e["data"][2:]
             got_nonce = int(e["topics"][1], 16)

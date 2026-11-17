@@ -1,0 +1,16 @@
+{
+  "nonce": 901328,
+  "ping_timestamp": 1794901330,
+  "ping_block": 59897307,
+  "arrived_timestamp": 1794901331,
+  "arrived_block": 59897314,
+  "reactive_injected": "0x3869253c23720ee4f9cca89174caccbde76e9073",
+  "callback_tx": "0x2d86403216f737473b4443078b39f8c8c9426df42b13d275b6123edf20c4f4dc",
+  "latency_blocks": 7,
+  "latency_blocks_200ms": 1.4,
+  "latency_timestamp_s": 1,
+  "wall_clock_s": 6.13,
+  "origin": "0x807d39D27c5BC04427C17c5f523b8C00Ea0ad863",
+  "sink": "0x81806E13aAEb4999C248FAf65BDCf1b7F3b5566b",
+  "reactive": "0x3869253c23720ee4f9cCA89174cACcBDe76E9073"
+}
