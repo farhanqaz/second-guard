@@ -98,19 +98,19 @@ def lockup(path, dark=True, height=400):
     print(path.name, width, height)
 
 
-def svg(path):
-    body = "#f2ece0"
+def svg(path, dark=True):
+    body = "#f2ece0" if dark else "#15130f"
     accent = "#e0654d"
-    rule = "#968f82"
+    rule = "#968f82" if dark else "#7b7264"
     path.write_text(f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <title>Second Guard</title>
-  <desc>Two markers on one rule, one filled, one open, with a tick pointing at the gap between them.</desc>
+  <desc>Two venues on one rule, one filled and one open, with the rule broken between them.</desc>
   <g stroke="{rule}" stroke-width="15" stroke-linecap="round">
-    <line x1="35" y1="307" x2="99" y2="307"/>
-    <line x1="416" y1="307" x2="477" y2="307"/>
+    <line x1="35" y1="256" x2="99" y2="256"/>
+    <line x1="416" y1="256" x2="477" y2="256"/>
   </g>
-  <circle cx="157" cy="307" r="58" fill="{body}"/>
-  <circle cx="358" cy="307" r="58" fill="none" stroke="{accent}" stroke-width="29"/>
+  <circle cx="157" cy="256" r="58" fill="{body}"/>
+  <circle cx="358" cy="256" r="58" fill="none" stroke="{accent}" stroke-width="29"/>
 </svg>
 """)
     print(path.name)
@@ -124,7 +124,8 @@ def main():
     icon(OUT / "second-guard-avatar-1024.png", 1024, bg=CHARCOAL, pad_ratio=0.18)
     lockup(OUT / "second-guard-lockup-dark.png", dark=True)
     lockup(OUT / "second-guard-lockup-light.png", dark=False)
-    svg(OUT / "second-guard-logo.svg")
+    svg(OUT / "second-guard-logo-dark.svg", dark=True)
+    svg(OUT / "second-guard-logo-light.svg", dark=False)
 
 
 if __name__ == "__main__":
