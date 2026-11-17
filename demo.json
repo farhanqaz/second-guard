@@ -1,0 +1,11 @@
+{
+  "base": {
+    "chainId": 84532,
+    "rpc": "https://sepolia.base.org",
+    "proxy": "0x476F44b11F5C942c58f4C8E3d0300E5710743585",
+    "tokenA": "0xe8a19EaeD0aC45f6C82089dE0120FC0151D70759",
+    "tokenB": "0xe03146F8762CdDb4ca7936F45df49551FC4A32Be",
+    "pool": "0xa4488eCab341cC8AdF0EBeB975707B71Dd9445D8",
+    "price": "1000000000000000000 [1e18]"
+  }
+}

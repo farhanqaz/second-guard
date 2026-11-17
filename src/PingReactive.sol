@@ -20,9 +20,7 @@ contract PingReactive is AbstractReactive {
     uint256 public handled;
     uint64 public gasLimit = 400_000;
 
-    constructor(uint256 originChainId_, uint256 destinationChainId_, address originContract_, uint256 topic0_)
-        payable
-    {
+    constructor(uint256 originChainId_, uint256 destinationChainId_, address originContract_, uint256 topic0_) payable {
         originChainId = originChainId_;
         destinationChainId = destinationChainId_;
         deployer = msg.sender;
