@@ -155,7 +155,7 @@ def main():
         # gte*lte instead of between(a,b): commas inside an expression would split the filter chain
         filters.append(
             "drawtext=fontfile=" + MONO + ":textfile=" + str(txt) +
-            ":fontsize=23:fontcolor=0xEFE9DC:box=1:boxcolor=0x15130F@0.92:boxborderw=16" +
+            ":fontsize=23:fontcolor=0xEFE9DC:box=1:boxcolor=0x15130F@0.97:boxborderw=16" +
             ":x=(w-text_w)/2:y=h-text_h-36" +
             f":enable='between(t\\,{cue['start']}\\,{cue['end']})'"
         )
