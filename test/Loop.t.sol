@@ -57,6 +57,9 @@ contract LoopTest is Test {
 
 contract PayloadHarness {
     function payload(uint256 nonce, uint256 pingTimestamp, uint256 pingBlock) public pure returns (bytes memory) {
-        return abi.encodeWithSignature("pong(address,uint256,uint256,uint256)", address(0), nonce, pingTimestamp, pingBlock);
+        return
+            abi.encodeWithSignature(
+                "pong(address,uint256,uint256,uint256)", address(0), nonce, pingTimestamp, pingBlock
+            );
     }
 }
