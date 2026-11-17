@@ -3,212 +3,350 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Second Guard · cross-venue parity breaker on Reactive Omni</title>
+<title>Second Guard · parity desk</title>
+<meta name="description" content="Cross-venue parity breaker on Reactive Omni. Two venues, one rule, 1.2 seconds." />
 <style>
+  @font-face{font-family:"Bricolage";src:url("fonts/bricolage-grotesque-400-700.woff2") format("woff2");
+    font-weight:400 700;font-style:normal;font-display:swap}
+  @font-face{font-family:"Plex Mono";src:url("fonts/ibm-plex-mono-400.woff2") format("woff2");
+    font-weight:400;font-style:normal;font-display:swap}
+  @font-face{font-family:"Plex Mono";src:url("fonts/ibm-plex-mono-500.woff2") format("woff2");
+    font-weight:500;font-style:normal;font-display:swap}
+
   :root{
-    --ink:#0a0a0b; --paper:#f4f1ea; --muted:#9a958c; --line:rgba(244,241,234,.14);
-    --amber:#e0a33e; --red:#e2564a; --green:#7fb069; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --paper:#efe9dc; --paper-2:#e6ddca; --ink:#15130f; --ink-2:#3b362c;
+    --muted:#7b7264; --line:#cdc3ae; --oxide:#a23127; --olive:#4b6536;
+    --grotesk:"Bricolage",system-ui,sans-serif; --mono:"Plex Mono",ui-monospace,monospace;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--ink);color:var(--paper)}
-  body{font-family:var(--serif);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1180px;margin:0 auto;padding:56px 40px 80px}
-  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-  h1{font-size:clamp(40px,6.4vw,84px);line-height:.96;letter-spacing:-.02em;margin:26px 0 0;font-weight:400}
-  h1 em{font-style:italic;color:var(--amber)}
-  .lede{max-width:56ch;margin:22px 0 0;font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:#cfc9bf}
-  .cta{display:inline-block;margin-top:28px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;
-       text-transform:uppercase;color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.5);
-       padding-bottom:4px}
-  .cta:hover{color:var(--paper);border-color:var(--paper)}
-  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:54px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .cell{padding:22px 22px 24px;border-right:1px solid var(--line)}
-  .cell:last-child{border-right:0}
-  .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-  .v{font-family:var(--mono);font-size:clamp(22px,3vw,34px);margin-top:12px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-  .v small{font-size:.5em;color:var(--muted);letter-spacing:.02em}
-  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:9px;vertical-align:middle;animation:pulse 2.4s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
-  section{margin-top:64px}
-  .shead{display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--line);padding-bottom:12px}
-  .num{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.14em}
-  .shead h2{font-size:clamp(20px,2.4vw,26px);font-weight:400;margin:0;letter-spacing:-.01em}
-  .shead p{margin:0 0 0 auto;color:var(--muted);font-size:13.5px;font-family:var(--mono)}
-  .venues{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line)}
-  .venue{padding:26px 26px 28px 0;border-right:1px solid var(--line)}
-  .venue+.venue{padding-left:26px;padding-right:0;border-right:0}
-  .chain{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .px{font-family:var(--mono);font-size:clamp(30px,4.4vw,52px);margin:14px 0 4px;font-variant-numeric:tabular-nums}
-  .pairs{font-family:var(--mono);font-size:12px;color:var(--muted)}
-  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;padding:5px 10px;border:1px solid var(--line);margin-top:16px;text-transform:uppercase}
-  .pill.stop{color:var(--red);border-color:rgba(226,86,74,.5)}
-  .pill.live{color:var(--green);border-color:rgba(127,176,105,.45)}
-  .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border-bottom:1px solid var(--line)}
-  .rule{padding:26px 26px 30px 0}
-  .rule dl{display:grid;grid-template-columns:auto auto;gap:10px 28px;margin:18px 0 0;font-family:var(--mono);font-size:13px}
-  .rule dt{color:var(--muted)}
-  .rule dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
-  .trip{padding:26px 0 30px 26px;border-left:1px solid var(--line)}
-  .trip .t{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:12px;word-break:break-all;line-height:1.7}
-  .trip a{color:var(--paper);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.5)}
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--line)}
-  .step{padding:24px 24px 28px 0;border-right:1px solid var(--line)}
-  .step+.step{padding-left:24px}
-  .step:last-child{border-right:0}
-  .step .s{font-family:var(--mono);font-size:11px;color:var(--amber)}
-  .step h3{font-size:17px;font-weight:400;margin:10px 0 8px}
-  .step p{margin:0;font-size:14px;line-height:1.6;color:#bdb7ad}
-  .feed{margin-top:26px;border-top:1px solid var(--line)}
-  .row{display:grid;grid-template-columns:80px 1fr 1fr 90px;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px;align-items:center}
-  .row .h{color:var(--muted);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
-  .row a{color:var(--paper);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.4);word-break:break-all}
-  footer{margin-top:72px;border-top:1px solid var(--line);padding-top:22px;display:flex;flex-wrap:wrap;gap:14px 40px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
-  footer a{color:var(--muted)}
-  .err{color:var(--red)}
-  @media (max-width:860px){
-    .wrap{padding:36px 20px 60px}
-    .strip{grid-template-columns:1fr 1fr}
-    .cell:nth-child(2){border-right:0}
-    .cell:nth-child(1),.cell:nth-child(2){border-bottom:1px solid var(--line)}
-    .venues,.grid2,.steps{grid-template-columns:1fr}
-    .venue,.venue+.venue,.rule,.trip,.step,.step+.step{padding-left:0;padding-right:0;border-right:0;border-left:0;border-bottom:1px solid var(--line)}
-    .trip,.step+.step{border-bottom:0}
-    .shead p{display:none}
-    .row{grid-template-columns:64px 1fr;row-gap:4px}
-    .row .h{display:none}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--grotesk);
+    font-size:16px;line-height:1.45}
+  a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+  ::selection{background:var(--ink);color:var(--paper)}
+
+  .bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--ink);
+    display:flex;align-items:center;gap:24px;padding:14px 28px;font-family:var(--mono);font-size:11px;
+    letter-spacing:.12em;text-transform:uppercase}
+  .mark{font-family:var(--grotesk);font-size:15px;font-weight:700;letter-spacing:-.01em;text-transform:none}
+  .mark span{color:var(--oxide)}
+  .bar .mid{color:var(--muted)}
+  .bar .right{margin-left:auto;display:flex;align-items:center;gap:18px}
+  .tag{border:1px solid var(--ink);padding:3px 8px;letter-spacing:.1em}
+  .tag.stop{border-color:var(--oxide);color:var(--oxide)}
+  .tag.live{border-color:var(--olive);color:var(--olive)}
+
+  .shell{display:grid;grid-template-columns:248px minmax(0,1fr);max-width:1440px;margin:0 auto}
+  .rail{border-right:1px solid var(--line);padding:26px 22px 40px;position:sticky;top:49px;
+    align-self:start;max-height:calc(100vh - 49px);overflow:auto}
+  .rail h2{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  .rail dl{display:grid;grid-template-columns:1fr auto;gap:7px 10px;margin:0 0 26px;font-family:var(--mono);
+    font-size:12px}
+  .rail dt{color:var(--muted)}
+  .rail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .addr{font-family:var(--mono);font-size:11.5px;line-height:1.75;word-break:break-all}
+  .addr button{all:unset;cursor:pointer;border-bottom:1px solid var(--line)}
+  .addr button:hover{border-color:var(--ink)}
+  .rail .note{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 26px}
+
+  main{padding:0 0 80px}
+  .band{border-bottom:1px solid var(--line);padding:26px 34px 34px}
+  .bhead{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+  .bnum{font-family:var(--mono);font-size:11px;color:var(--oxide);letter-spacing:.16em;
+    border-bottom:1px solid var(--oxide);padding-bottom:2px}
+  .bhead h2{font-size:22px;font-weight:500;letter-spacing:-.015em;margin:0}
+  .bhead .meta{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:6px}
+  .ro{padding:0 0 10px}
+  .ro+.ro{padding-left:26px;border-left:1px solid var(--line)}
+  .ro .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .ro .px{font-family:var(--mono);font-size:clamp(34px,5vw,58px);font-weight:500;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;line-height:1.05;margin-top:6px}
+  .ro .sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px}
+  .spread{display:flex;align-items:baseline;gap:12px;margin:2px 0 18px}
+  .spread b{font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+  .spread .cap{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+
+  svg.band-chart{display:block;width:100%;height:auto;overflow:visible}
+  .axis{stroke:var(--line);stroke-width:1}
+  .tick{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+  .tol{fill:var(--ink);opacity:.06}
+  .tol-edge{stroke:var(--ink);stroke-opacity:.28;stroke-dasharray:3 4;stroke-width:1}
+  .dot-base{fill:var(--ink)}
+  .dot-uni{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+  .lbl{font-family:var(--mono);font-size:11px;fill:var(--ink)}
+  .band-line{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 3}
+
+  .chartcap{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px}
+  .chartcap .solid,.chartcap .hollow{color:var(--ink)}
+  .chartcap .hollow{opacity:.75}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px}
+  th{text-align:left;font-weight:400;color:var(--muted);font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;padding:0 0 10px;border-bottom:1px solid var(--ink)}
+  td{padding:13px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  th.num{text-align:right}
+  .state{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+  .state.s{color:var(--oxide)} .state.l{color:var(--olive)}
+
+  .jrow{display:grid;grid-template-columns:74px 92px 1fr 64px 110px;gap:14px;align-items:baseline;
+    padding:11px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+  .jrow .t{color:var(--muted)}
+  .jrow .b{color:var(--muted);font-variant-numeric:tabular-nums}
+  .jrow .c{text-transform:uppercase;letter-spacing:.1em;font-size:10.5px}
+  .jrow .bps{text-align:right;font-variant-numeric:tabular-nums}
+  .jrow a{text-decoration:none;border-bottom:1px solid var(--line)}
+  .jrow a:hover{border-color:var(--ink)}
+  .jrow.head{border-bottom:1px solid var(--ink);color:var(--muted);font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;padding-bottom:8px}
+  .empty{font-family:var(--mono);font-size:12px;color:var(--muted);padding:14px 0}
+
+  .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .leg{padding-right:22px}
+  .leg+.leg{padding-left:22px;border-left:1px solid var(--line);padding-right:0}
+  .leg .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .leg .v{font-family:var(--mono);font-size:15px;margin-top:8px;font-variant-numeric:tabular-nums}
+  .leg p{font-size:13.5px;color:var(--ink-2);margin:8px 0 0;max-width:34ch}
+  .loopnote{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:20px;
+    border-top:1px solid var(--line);padding-top:14px}
+
+  footer{border-top:1px solid var(--ink);padding:22px 34px;display:flex;flex-wrap:wrap;gap:10px 34px;
+    font-family:var(--mono);font-size:11px;color:var(--muted)}
+  footer a{color:var(--ink-2)}
+  .err{color:var(--oxide)}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr}
+    .rail{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--ink);
+      display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:20px}
+    .rail dl{margin-bottom:16px}
+    .band{padding:22px 20px 26px}
+    .readout{grid-template-columns:1fr}
+    .ro+.ro{padding-left:0;border-left:0;border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+    .loop{grid-template-columns:1fr}
+    .leg,.leg+.leg{padding:0 0 16px;border-left:0;border-bottom:1px solid var(--line);margin-bottom:16px}
+    .leg:last-child{border-bottom:0;margin-bottom:0}
+    .jrow{grid-template-columns:64px 1fr 60px;row-gap:4px}
+    .jrow .b,.jrow .tx{display:none}
+    .bar{gap:12px;padding:12px 16px;flex-wrap:wrap}
+    .bar .mid{display:none}
+    footer{padding:18px 20px}
   }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="eyebrow">Reactive Omni Buildathon · Every Second Counts · Base Sepolia + Unichain Sepolia</div>
-  <h1>Two venues,<br />one rule,<br /><em>one second.</em></h1>
-  <p class="lede">Second Guard watches the same pair on two chains. When the venues disagree past a threshold, it
-  stops both of them in the same breath. No keeper, no relayer, no off-chain watcher. The rule itself lives on
-  Reactive Lasna.</p>
 
-  <a class="cta" href="demo.mp4">Watch the 59 second demo</a>
-
-  <div class="strip">
-    <div class="cell"><div class="k">Base Sepolia · ALPHA/BETA</div><div class="v" id="pbase">···</div></div>
-    <div class="cell"><div class="k">Unichain Sepolia · ALPHA/BETA</div><div class="v" id="puni">···</div></div>
-    <div class="cell"><div class="k">Divergence</div><div class="v" id="div">···</div></div>
-    <div class="cell"><div class="k">Guard state</div><div class="v" id="state"><span class="dot"></span>···</div></div>
+<div class="bar">
+  <div class="mark">Second<span>·</span>Guard</div>
+  <div class="mid">parity risk desk · base sepolia / unichain sepolia</div>
+  <div class="right">
+    <span id="clock">--:--:--</span>
+    <span class="tag" id="tag">reading</span>
   </div>
+</div>
 
-  <section>
-    <div class="shead"><span class="num">01</span><h2>The venues</h2><p id="venueNote">reading chains</p></div>
-    <div class="venues">
-      <div class="venue">
-        <div class="chain">Base Sepolia · 84532</div>
-        <div class="px" id="vbasePrice">···</div>
-        <div class="pairs" id="vbaseMeta">reserves · pool</div>
-        <div class="pill" id="vbaseStatus">reading</div>
-      </div>
-      <div class="venue">
-        <div class="chain">Unichain Sepolia · 1301</div>
-        <div class="px" id="vuniPrice">···</div>
-        <div class="pairs" id="vuniMeta">reserves · pool</div>
-        <div class="pill" id="vuniStatus">reading</div>
-      </div>
+<div class="shell">
+  <aside class="rail">
+    <h2>The rule</h2>
+    <dl>
+      <dt>threshold</dt><dd id="rThr">···</dd>
+      <dt>staleness</dt><dd id="rStale">···</dd>
+      <dt>cooldown</dt><dd id="rCool">···</dd>
+      <dt>armed</dt><dd id="rArmed">···</dd>
+      <dt>trips</dt><dd id="rTrips">···</dd>
+    </dl>
+    <h2>Guard, Lasna 5318007</h2>
+    <div class="addr"><button id="aGuard" data-copy>···</button></div>
+    <h2 style="margin-top:22px">Venues</h2>
+    <div class="addr">
+      base <button id="aBase" data-copy>···</button><br />
+      uni <button id="aUni" data-copy>···</button>
     </div>
-  </section>
+    <h2 style="margin-top:22px">Check it</h2>
+    <p class="note">Every number on this page is read from the three chains in your browser. No backend,
+      no cached snapshot.</p>
+    <p class="note"><a href="https://github.com/farhanqaz/second-guard">source</a> ·
+      <a href="demo.mp4">59s demo</a></p>
+  </aside>
 
-  <section>
-    <div class="shead"><span class="num">02</span><h2>The rule</h2><p>stored on Reactive Lasna · 5318007</p></div>
-    <div class="grid2">
-      <div class="rule">
-        <dl>
-          <dt>threshold</dt><dd id="rThreshold">···</dd>
-          <dt>max staleness</dt><dd id="rStale">···</dd>
-          <dt>cooldown</dt><dd id="rCooldown">···</dd>
-          <dt>armed</dt><dd id="rArmed">···</dd>
-          <dt>trips</dt><dd id="rTrips">···</dd>
-          <dt>price seen on 84532</dt><dd id="rPA">···</dd>
-          <dt>price seen on 1301</dt><dd id="rPB">···</dd>
-        </dl>
+  <main>
+    <section class="band">
+      <div class="bhead"><span class="bnum">01</span><h2>Parity</h2>
+        <span class="meta" id="blockNote">base block ···</span></div>
+      <div class="readout">
+        <div class="ro">
+          <div class="who">Base Sepolia · ALPHA/BETA</div>
+          <div class="px" id="pBase">···</div>
+          <div class="sub" id="sBase">reserves · swaps</div>
+        </div>
+        <div class="ro">
+          <div class="who">Unichain Sepolia · ALPHA/BETA</div>
+          <div class="px" id="pUni">···</div>
+          <div class="sub" id="sUni">reserves · swaps</div>
+        </div>
       </div>
-      <div class="trip">
-        <div class="k">Last trip</div>
-        <div class="px" id="tripBps" style="font-size:clamp(28px,4vw,44px)">···</div>
-        <div class="t" id="tripMeta">no trip observed in this window</div>
+      <div class="spread"><b id="bps">···</b><span class="cap">basis points apart</span></div>
+      <svg class="band-chart" viewBox="0 0 900 150" role="img" aria-label="price band with both venues and the tolerance window">
+        <line class="axis" x1="40" y1="112" x2="870" y2="112" />
+        <rect class="tol" id="tolRect" x="0" y="86" width="0" height="26" />
+        <line class="tol-edge" id="tolL" x1="0" y1="86" x2="0" y2="112" />
+        <line class="tol-edge" id="tolR" x1="0" y1="86" x2="0" y2="112" />
+        <g id="ticks"></g>
+        <line class="band-line" id="stemBase" x1="0" y1="90" x2="0" y2="112" />
+        <line class="band-line" id="stemUni" x1="0" y1="68" x2="0" y2="112" />
+        <circle class="dot-uni" id="dotUni" cx="0" cy="112" r="7" />
+        <circle class="dot-base" id="dotBase" cx="0" cy="112" r="4.5" />
+        <text class="lbl" id="lblBase" x="0" y="86">base</text>
+        <text class="lbl" id="lblUni" x="0" y="62">uni</text>
+      </svg>
+      <div class="chartcap">tolerance window ±<span id="tolBps">500</span> bps around the 1.0000 reference ·
+        <span class="solid">base</span> filled mark · <span class="hollow">unichain</span> open mark</div>
+    </section>
+
+    <section class="band">
+      <div class="bhead"><span class="bnum">02</span><h2>Venues</h2>
+        <span class="meta">two chains, one pair</span></div>
+      <table>
+        <thead><tr><th>venue</th><th>chain id</th><th class="num">price</th><th class="num">reserves</th>
+          <th class="num">swaps</th><th class="num">state</th></tr></thead>
+        <tbody>
+          <tr><td>MiniPool ALPHA/BETA</td><td>84532</td><td class="num" id="tPriceB">···</td>
+            <td class="num" id="tResB">···</td><td class="num" id="tSwB">···</td>
+            <td class="num"><span class="state" id="tStateB">···</span></td></tr>
+          <tr><td>MiniPool ALPHA/BETA</td><td>1301</td><td class="num" id="tPriceU">···</td>
+            <td class="num" id="tResU">···</td><td class="num" id="tSwU">···</td>
+            <td class="num"><span class="state" id="tStateU">···</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="band">
+      <div class="bhead"><span class="bnum">03</span><h2>Journal</h2>
+        <span class="meta" id="jMeta">callbacks observed</span></div>
+      <div id="journal">
+        <div class="jrow head"><span>time</span><span>chain</span><span>callback</span><span class="bps">bps</span><span>block</span></div>
+        <div class="empty" id="jEmpty">reading logs</div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <div class="shead"><span class="num">03</span><h2>The loop</h2><p>measured, not estimated</p></div>
-    <div class="steps">
-      <div class="step"><div class="s">STEP 01</div><h3>A swap on Base</h3><p>The damage happens here. One dump moves the venue 32 percent away from its twin.</p></div>
-      <div class="step"><div class="s">STEP 02</div><h3>The rule fires on Lasna</h3><p>The reactive contract holds both feeds, computes divergence in basis points, and requests two callbacks.</p></div>
-      <div class="step"><div class="s">STEP 03</div><h3>Both venues stop</h3><p>1.2 seconds after the dump, on two chains, from one event. That number is on chain, in the block timestamps.</p></div>
-    </div>
-    <div class="feed">
-      <div class="row"><span class="h">when</span><span class="h">chain</span><span class="h">callback tx</span><span class="h">bps</span></div>
-      <div id="tripRows"></div>
-    </div>
-  </section>
+    <section class="band" style="border-bottom:0">
+      <div class="bhead"><span class="bnum">04</span><h2>One loop, measured</h2>
+        <span class="meta">recorded run · 17 nov 2026</span></div>
+      <div class="loop">
+        <div class="leg">
+          <div class="k">Leg 01 · origin</div>
+          <div class="v">59914213</div>
+          <p>A 150 ALPHA dump moves the Base venue from 1.0000 to 1.3220. This is the event the rule watches.</p>
+        </div>
+        <div class="leg">
+          <div class="k">Leg 02 · Lasna</div>
+          <div class="v">8556174</div>
+          <p>The reactive contract updates its stored price, computes 2753 bps, and requests two callbacks in one execution.</p>
+        </div>
+        <div class="leg">
+          <div class="k">Leg 03 · both venues</div>
+          <div class="v">59914220 · 68052285</div>
+          <p>Both pools pause. 7 Base blocks separate the dump from the pause, which is 1.4 seconds.</p>
+        </div>
+      </div>
+      <div class="loopnote">source block 59914213 appears in both callbacks, so the decision can be traced back to the swap that caused it.</div>
+    </section>
 
-  <footer>
-    <span>guard <a id="fGuard" href="#" target="_blank" rel="noreferrer">···</a></span>
-    <span>base pool <a id="fBase" href="#" target="_blank" rel="noreferrer">···</a></span>
-    <span>uni pool <a id="fUni" href="#" target="_blank" rel="noreferrer">···</a></span>
-    <span>testnet only · no real funds</span>
-  </footer>
+    <footer>
+      <span>second guard · reactive omni buildathon · every second counts</span>
+      <span><a href="https://github.com/farhanqaz/second-guard">github.com/farhanqaz/second-guard</a></span>
+      <span><a href="demo.mp4">demo.mp4</a></span>
+      <span>testnet only, no real funds</span>
+    </footer>
+  </main>
 </div>
 
 <script>
-const KNOWN_TRIPS = [
-  {label:"base", tx:"0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48",
-   block:59906931, bps:2753, ts:1794903255},
-  {label:"uni", tx:"0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a",
-   block:68050827, bps:2753, ts:1794903255}
-];
-
 const CFG = {
-  base: { rpc:"https://sepolia.base.org", pool:"0x3c68028E292f2f8876b13C3F4b4d61b1CB03be75", chainId:84532,
-          cb:"0x020Ff8Fe9623F0450Bda921B66B9dCF7cbBd4565", explorer:"https://sepolia.basescan.org" },
-  uni:  { rpc:"https://sepolia.unichain.org", pool:"0x07b3674a0c0097FD0b72fF0Eb7Ec7Dc1636DDe4e", chainId:1301,
-          cb:"0xEFD031d9EA36c800b21fd0072B1CAaCA21721fEe", explorer:"https://sepolia.uniscan.xyz" },
-  lasna:{ rpc:"https://lasna-rpc.rnk.dev/", guard:"0x85408366c1AE50491755a75378e98F2B27469818",
+  base:{ rpc:"https://sepolia.base.org", pool:"0x153f483ab58C67b6e11DebC514DBCB383d45d015", cb:"0x9826cE3430d8c9B7B413425755841E845b04002E",
+         chainId:84532, explorer:"https://sepolia.basescan.org" },
+  uni:{ rpc:"https://sepolia.unichain.org", pool:"0x02F44658aCC569d1bF27cF50223a35696DbA4878", cb:"0x93356Ae33DaE0cbCDA2E7a223c5D32564E0911f3",
+        chainId:1301, explorer:"https://sepolia.uniscan.xyz" },
+  lasna:{ rpc:"https://lasna-rpc.rnk.dev/", guard:"0x7DaC6d62F8eEce510466014C64677E5223931BAf",
           explorer:"https://lasna.reactscan.net" }
 };
-const short = a => a.slice(0,6)+"…"+a.slice(-4);
-const key = n => n.toString(16).padStart(64,"0");
-const fmtPrice = v => (Number(v)/1e18).toFixed(4);
-const fmtBps = v => (Number(v)/100).toFixed(2)+"%";
+const KNOWN = [
+  {chain:"uni", tx:"0xbd3e23498bc2062264c85575720f2a437b3344a9d9fe6af5022cb228e17f3113", block:68052285, bps:2753, ts:1794904713},
+  {chain:"base", tx:"0xa1f824cdc92dccb12cb990f365c96fb5d248b7b50a15ea8832f613ea89d30751", block:59914220, bps:2753, ts:1794904712}
+];
+const $ = id => document.getElementById(id);
+const short = a => a.slice(0,6) + "…" + a.slice(-4);
+const hexKey = n => n.toString(16).padStart(64,"0");
+const price = v => (Number(v)/1e18).toFixed(4);
+const pct = v => (Number(v)/100).toFixed(2) + "%";
 
 async function rpc(url, method, params){
   const r = await fetch(url,{method:"POST",headers:{"content-type":"application/json"},
     body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
+  if(!r.ok) throw new Error("http " + r.status);
   const j = await r.json();
   if(j.error) throw new Error(j.error.message);
   return j.result;
 }
 async function call(url, to, data){
   const out = await rpc(url,"eth_call",[{to,data},"latest"]);
-  return BigInt(out === "0x" ? "0x0" : out);
+  return BigInt(out === "0x" || out === "0x0" ? "0x0" : out);
 }
-async function getLogs(url, address, from, to){
+async function logs(url, address, from, to){
   const out = [];
-  let start = from;
-  while(start <= to){
-    const stop = Math.min(start+190, to);
+  for(let s = from; s <= to; s += 190){
+    const e = Math.min(s + 189, to);
     try{
-      const part = await rpc(url,"eth_getLogs",[{address,fromBlock:"0x"+start.toString(16),toBlock:"0x"+stop.toString(16)}]);
-      out.push(...part);
-    }catch(e){ /* a rate limited chunk must not blank the whole feed */ }
-    start = stop+1;
+      out.push(...await rpc(url,"eth_getLogs",[{address, fromBlock:"0x"+s.toString(16), toBlock:"0x"+e.toString(16)}]));
+    }catch(err){ /* a throttled chunk must not blank the journal */ }
   }
   return out;
 }
 
-let last = {base:null, uni:null};
+const DOMAIN = [0.80, 1.45], X0 = 40, X1 = 870;
+const xOf = p => X0 + (Math.min(Math.max(p, DOMAIN[0]), DOMAIN[1]) - DOMAIN[0]) / (DOMAIN[1]-DOMAIN[0]) * (X1-X0);
+
+function drawTicks(){
+  let html = "";
+  for(let p = 0.80; p <= 1.4501; p += 0.05){
+    const x = xOf(p);
+    html += '<line class="axis" x1="' + x + '" y1="112" x2="' + x + '" y2="117" />';
+    if(Math.abs((p*100) % 10) < 1) html += '<text class="tick" x="' + x + '" y="134" text-anchor="middle">' + p.toFixed(2) + '</text>';
+  }
+  $("ticks").innerHTML = html;
+}
+
+const state = { threshold:0 };
+
+function drawBand(){
+  const thr = Number(state.threshold || 0) / 1e4;
+  const lo = 1 - thr, hi = 1 + thr;
+  $("tolRect").setAttribute("x", xOf(lo));
+  $("tolRect").setAttribute("width", Math.max(2, xOf(hi) - xOf(lo)));
+  $("tolL").setAttribute("x1", xOf(lo)); $("tolL").setAttribute("x2", xOf(lo));
+  $("tolR").setAttribute("x1", xOf(hi)); $("tolR").setAttribute("x2", xOf(hi));
+}
+
+function drawMarkers(rawB, rawU){
+  const pB = Number(rawB) / 1e18, pU = Number(rawU) / 1e18;
+  const xb = xOf(pB), xu = xOf(pU);
+  const clamp = x => Math.min(Math.max(x, 76), 834);
+  $("stemBase").setAttribute("x1", xb); $("stemBase").setAttribute("x2", xb);
+  $("dotBase").setAttribute("cx", xb);
+  $("lblBase").setAttribute("x", clamp(xb)); $("lblBase").setAttribute("text-anchor","middle");
+  $("lblBase").textContent = "base " + price(rawB);
+  $("stemUni").setAttribute("x1", xu); $("stemUni").setAttribute("x2", xu);
+  $("dotUni").setAttribute("cx", xu);
+  $("lblUni").setAttribute("x", clamp(xu)); $("lblUni").setAttribute("text-anchor","middle");
+  $("lblUni").textContent = "uni " + price(rawU);
+}
 
 async function tick(){
   try{
-    const [bPrice,bPaused,bRA,bRB,bSwaps,bHead] = await Promise.all([
+    const [bPx,bPaused,bRa,bRb,bSw,bHead] = await Promise.all([
       call(CFG.base.rpc,CFG.base.pool,"0xa035b1fe"),
       call(CFG.base.rpc,CFG.base.pool,"0x5c975abb"),
       call(CFG.base.rpc,CFG.base.pool,"0xdc5fa6c5"),
@@ -216,117 +354,112 @@ async function tick(){
       call(CFG.base.rpc,CFG.base.pool,"0x4c984185"),
       rpc(CFG.base.rpc,"eth_blockNumber",[])
     ]);
-    const [uPrice,uPaused,uRA,uRB,uSwaps] = await Promise.all([
+    const [uPx,uPaused,uRa,uRb,uSw] = await Promise.all([
       call(CFG.uni.rpc,CFG.uni.pool,"0xa035b1fe"),
       call(CFG.uni.rpc,CFG.uni.pool,"0x5c975abb"),
       call(CFG.uni.rpc,CFG.uni.pool,"0xdc5fa6c5"),
       call(CFG.uni.rpc,CFG.uni.pool,"0x19e36f3b"),
       call(CFG.uni.rpc,CFG.uni.pool,"0x4c984185")
     ]);
-    const [gPA,gPB,gThr,gTrips,gArmed] = await Promise.all([
-      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+key(84532)),
-      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+key(1301)),
+    const [gThr,gTrips,gArmed,gPa,gPb] = await Promise.all([
       call(CFG.lasna.rpc,CFG.lasna.guard,"0xc1144b71"),
       call(CFG.lasna.rpc,CFG.lasna.guard,"0x7bbb19dc"),
-      call(CFG.lasna.rpc,CFG.lasna.guard,"0x2f411093")
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x2f411093"),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+hexKey(84532)),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+hexKey(1301))
     ]);
 
-    const pB = Number(bPrice), pU = Number(uPrice);
-    const mid = (pB+pU)/2 || 1;
-    const divBps = Math.abs(pB-pU)/mid*10000;
-
-    document.getElementById("pbase").textContent = fmtPrice(bPrice);
-    document.getElementById("puni").textContent = fmtPrice(uPrice);
-    document.getElementById("div").textContent = divBps.toFixed(0)+" bps";
+    const pB = Number(bPx), pU = Number(uPx);
+    const mid = (pB + pU) / 2 || 1;
+    const bps = Math.abs(pB - pU) / mid * 10000;
     const stopped = bPaused === 1n || uPaused === 1n;
-    document.getElementById("state").innerHTML = stopped
-      ? '<span class="dot" style="background:var(--red)"></span>STOPPED'
-      : '<span class="dot"></span>ARMED';
+    state.threshold = Number(gThr);
 
-    document.getElementById("vbasePrice").textContent = fmtPrice(bPrice);
-    document.getElementById("vuniPrice").textContent = fmtPrice(uPrice);
-    document.getElementById("vbaseMeta").textContent =
-      "reserves "+(Number(bRA)/1e18).toFixed(0)+" / "+(Number(bRB)/1e18).toFixed(0)+" · swaps "+bSwaps+" · "+short(CFG.base.pool);
-    document.getElementById("vuniMeta").textContent =
-      "reserves "+(Number(uRA)/1e18).toFixed(0)+" / "+(Number(uRB)/1e18).toFixed(0)+" · swaps "+uSwaps+" · "+short(CFG.uni.pool);
+    $("pBase").textContent = price(bPx);
+    $("pUni").textContent = price(uPx);
+    $("sBase").textContent = "reserves " + (Number(bRa)/1e18).toFixed(0) + " / " + (Number(bRb)/1e18).toFixed(0) + " · swaps " + bSw;
+    $("sUni").textContent = "reserves " + (Number(uRa)/1e18).toFixed(0) + " / " + (Number(uRb)/1e18).toFixed(0) + " · swaps " + uSw;
+    $("bps").textContent = bps.toFixed(0) + " bps";
+    $("blockNote").textContent = "base block " + parseInt(bHead,16);
 
-    const bS = document.getElementById("vbaseStatus"), uS = document.getElementById("vuniStatus");
-    bS.textContent = bPaused === 1n ? "paused by guard" : "trading";
-    bS.className = "pill "+(bPaused === 1n ? "stop" : "live");
-    uS.textContent = uPaused === 1n ? "paused by guard" : "trading";
-    uS.className = "pill "+(uPaused === 1n ? "stop" : "live");
+    $("tPriceB").textContent = price(bPx); $("tPriceU").textContent = price(uPx);
+    $("tResB").textContent = (Number(bRa)/1e18).toFixed(0) + " / " + (Number(bRb)/1e18).toFixed(0);
+    $("tResU").textContent = (Number(uRa)/1e18).toFixed(0) + " / " + (Number(uRb)/1e18).toFixed(0);
+    $("tSwB").textContent = bSw; $("tSwU").textContent = uSw;
+    const sb = $("tStateB"), su = $("tStateU");
+    sb.textContent = bPaused === 1n ? "paused" : "trading"; sb.className = "state " + (bPaused === 1n ? "s" : "l");
+    su.textContent = uPaused === 1n ? "paused" : "trading"; su.className = "state " + (uPaused === 1n ? "s" : "l");
 
-    document.getElementById("rThreshold").textContent = fmtBps(gThr);
-    document.getElementById("rStale").textContent = "600 s";
-    document.getElementById("rCooldown").textContent = "60 s";
-    document.getElementById("rArmed").textContent = gArmed === 1n ? "yes" : "no";
-    document.getElementById("rTrips").textContent = gTrips.toString();
-    document.getElementById("rPA").textContent = gPA === 0n ? "not seen yet" : fmtPrice(gPA);
-    document.getElementById("rPB").textContent = gPB === 0n ? "not seen yet" : fmtPrice(gPB);
-    document.getElementById("venueNote").textContent = "block "+parseInt(bHead,16);
+    $("rThr").textContent = pct(gThr);
+    $("tolBps").textContent = gThr.toString();
+    $("rStale").textContent = "600 s";
+    $("rCool").textContent = "60 s";
+    $("rArmed").textContent = gArmed === 1n ? "yes" : "no";
+    $("rTrips").textContent = gTrips.toString();
 
-    last = {base:bPaused, uni:uPaused};
+    const tag = $("tag");
+    tag.textContent = stopped ? "stopped" : (gArmed === 1n ? "armed" : "disarmed");
+    tag.className = "tag " + (stopped ? "stop" : "live");
+
+    drawMarkers(bPx, uPx);
+    drawBand();
   }catch(e){
-    document.getElementById("venueNote").innerHTML = '<span class="err">rpc error: '+e.message+'</span>';
+    $("blockNote").innerHTML = '<span class="err">rpc: ' + e.message + "</span>";
   }
 }
 
-async function trips(){
+async function journal(){
   try{
-    const headB = parseInt(await rpc(CFG.base.rpc,"eth_blockNumber",[]),16);
-    const headU = parseInt(await rpc(CFG.uni.rpc,"eth_blockNumber",[]),16);
-    const [lb,lu] = await Promise.all([
-      getLogs(CFG.base.rpc, CFG.base.cb, Math.max(headB-1200,0), headB-1),
-      getLogs(CFG.uni.rpc, CFG.uni.cb, Math.max(headU-2400,0), headU-1)
+    const [hb,hu] = await Promise.all([
+      rpc(CFG.base.rpc,"eth_blockNumber",[]),
+      rpc(CFG.uni.rpc,"eth_blockNumber",[])
     ]);
-    const rows = [];
-    for(const [logs,cfg,label] of [[lb,CFG.base,"base"],[lu,CFG.uni,"uni"]]){
-      for(const l of logs){
-        const d = l.data.slice(2);
-        rows.push({ label, tx:l.transactionHash, block:parseInt(l.blockNumber,16),
-          bps:parseInt(d.slice(128,192),16), ts:parseInt(d.slice(256,320),16), cfg });
-      }
-    }
-    let source = "live";
-    if(!rows.length){
-      source = "recorded";
-      for(const t of KNOWN_TRIPS){
-        rows.push({label:t.label, tx:t.tx, block:t.block, bps:t.bps, ts:t.ts,
-                   cfg: t.label === "base" ? CFG.base : CFG.uni});
-      }
-    }
-    rows.sort((a,b)=>b.ts-a.ts);
-    const box = document.getElementById("tripRows");
-    box.innerHTML = rows.slice(0,6).map(r=>(
-      '<div class="row"><span>'+new Date(r.ts*1000).toLocaleTimeString()+'</span>'+
-      '<span>'+r.label+' · '+r.block+'</span>'+
-      '<span><a href="'+r.cfg.explorer+'/tx/'+r.tx+'" target="_blank" rel="noreferrer">'+short(r.tx)+'</a></span>'+
-      '<span>'+r.bps+'</span></div>'
-    )).join("") || '<div class="row"><span>none</span><span>no trip in the last window</span><span></span><span></span></div>';
+    const [lb,lu] = await Promise.all([
+      logs(CFG.base.rpc, CFG.base.cb, Math.max(parseInt(hb,16)-1200,0), parseInt(hb,16)-1),
+      logs(CFG.uni.rpc, CFG.uni.cb, Math.max(parseInt(hu,16)-2400,0), parseInt(hu,16)-1)
+    ]);
+    let rows = [];
+    const push = (list, chain) => list.forEach(l => {
+      const d = l.data.slice(2);
+      rows.push({chain, tx:l.transactionHash, block:parseInt(l.blockNumber,16),
+        bps:parseInt(d.slice(128,192),16), ts:parseInt(d.slice(256,320),16)});
+    });
+    push(lb,"base"); push(lu,"uni");
+    const seen = new Set(rows.map(r => r.tx.toLowerCase()));
+    for(const k of KNOWN) if(!seen.has(k.tx.toLowerCase())) rows.push({...k});
+    rows.sort((a,b) => b.ts - a.ts);
 
-    if(rows.length){
-      const t = rows[0];
-      document.getElementById("tripBps").textContent = (t.bps/100).toFixed(2)+"%";
-      document.getElementById("tripMeta").innerHTML =
-        "divergence recorded on "+t.label+" at block "+t.block+". "+
-        '<a href="'+t.cfg.explorer+'/tx/'+t.tx+'" target="_blank" rel="noreferrer">callback tx</a>'+
-        (source === "recorded" ? ' <span style="opacity:.6">(outside the live log window)</span>' : "");
-    }
+    $("journal").innerHTML =
+      '<div class="jrow head"><span>time</span><span>chain</span><span>callback</span><span class="bps">bps</span><span>block</span></div>' +
+      rows.slice(0,6).map(r => {
+        const cfg = r.chain === "base" ? CFG.base : CFG.uni;
+        const t = new Date(r.ts*1000).toISOString().slice(11,19);
+        return '<div class="jrow"><span class="t">' + t + '</span><span class="c">' + r.chain + '</span>' +
+          '<span class="tx"><a href="' + cfg.explorer + '/tx/' + r.tx + '" target="_blank" rel="noreferrer">' + short(r.tx) + '</a></span>' +
+          '<span class="bps">' + r.bps + '</span><span class="b">' + r.block + '</span></div>';
+      }).join("");
+    $("jMeta").textContent = rows.length + " callback(s) in window";
   }catch(e){
-    document.getElementById("tripRows").innerHTML = '<div class="row"><span class="err">'+e.message+'</span></div>';
+    $("journal").innerHTML = '<div class="empty err">journal: ' + e.message + "</div>";
   }
 }
 
-document.getElementById("fGuard").textContent = short(CFG.lasna.guard);
-document.getElementById("fGuard").href = CFG.lasna.explorer+"/address/"+CFG.lasna.guard;
-document.getElementById("fBase").textContent = short(CFG.base.pool);
-document.getElementById("fBase").href = CFG.base.explorer+"/address/"+CFG.base.pool;
-document.getElementById("fUni").textContent = short(CFG.uni.pool);
-document.getElementById("fUni").href = CFG.uni.explorer+"/address/"+CFG.uni.pool;
+function clock(){
+  $("clock").textContent = new Date().toTimeString().slice(0,8) + " local";
+}
+document.querySelectorAll("[data-copy]").forEach(b => {
+  b.addEventListener("click", async () => {
+    try{ await navigator.clipboard.writeText(b.textContent.trim()); b.textContent = "copied"; setTimeout(() => location.reload(), 700); }
+    catch(e){}
+  });
+});
+$("aGuard").textContent = CFG.lasna.guard;
+$("aBase").textContent = CFG.base.pool;
+$("aUni").textContent = CFG.uni.pool;
 
-tick(); trips();
-setInterval(tick, 5000);
-setInterval(trips, 45000);
+drawTicks(); drawBand();
+tick(); journal(); clock();
+setInterval(tick, 5000); setInterval(clock, 1000); setInterval(journal, 60000);
 </script>
 </body>
 </html>

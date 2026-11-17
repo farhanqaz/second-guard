@@ -42,22 +42,24 @@ record where the decision came from.
 
 | Contract | Chain | Address |
 |---|---|---|
-| DivergenceGuard | Reactive Lasna 5318007 | `0x85408366c1AE50491755a75378e98F2B27469818` |
-| GuardCallback | Base Sepolia 84532 | `0x020Ff8Fe9623F0450Bda921B66B9dCF7cbBd4565` |
-| GuardCallback | Unichain Sepolia 1301 | `0xEFD031d9EA36c800b21fd0072B1CAaCA21721fEe` |
-| MiniPool (ALPHA/BETA) | Base Sepolia 84532 | `0x3c68028E292f2f8876b13C3F4b4d61b1CB03be75` |
-| MiniPool (ALPHA/BETA) | Unichain Sepolia 1301 | `0x07b3674a0c0097FD0b72fF0Eb7Ec7Dc1636DDe4e` |
+| DivergenceGuard | Reactive Lasna 5318007 | `0x7DaC6d62F8eEce510466014C64677E5223931BAf` |
+| GuardCallback | Base Sepolia 84532 | `0x9826cE3430d8c9B7B413425755841E845b04002E` |
+| GuardCallback | Unichain Sepolia 1301 | `0x93356Ae33DaE0cbCDA2E7a223c5D32564E0911f3` |
+| MiniPool (ALPHA/BETA) | Base Sepolia 84532 | `0x153f483ab58C67b6e11DebC514DBCB383d45d015` |
+| MiniPool (ALPHA/BETA) | Unichain Sepolia 1301 | `0x02F44658aCC569d1bF27cF50223a35696DbA4878` |
 
 ## Evidence from one real run
 
 | Step | Transaction | Block |
 |---|---|---|
-| Dump of 150 ALPHA on Base Sepolia, price 1.0000 to 1.3220 | `0x4a5db08d2810c4e7085c6c3948e63ee646e0288bdaaadb76282d1756e6ac083d` | 59906925 |
-| Base venue paused by the guard | `0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48` | 59906931 |
-| Unichain venue paused by the same event | `0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a` | 68050827 |
+| Dump of 150 ALPHA on Base Sepolia, price 1.0000 to 1.3220 | `0x88efac938c064bcad5a642fdbcb6c130d4f539d75e5674d1c113a384564b58dd` | 59914213 |
+| Reactive execution on Lasna (both callback requests) | `0x7c377abe23561c03ce99e26f1af0a1023d2a3be24fcc90e297c0506b7e494625` | 8557547 |
+| Base venue paused by the guard | `0xa1f824cdc92dccb12cb990f365c96fb5d248b7b50a15ea8832f613ea89d30751` | 59914220 |
+| Unichain venue paused by the same event | `0xbd3e23498bc2062264c85575720f2a437b3344a9d9fe6af5022cb228e17f3113` | 68052285 |
 
-Divergence recorded: 2753 bps (27.53%). Source block echoed on both chains: 59906925. Base block delta from
-the dump to the pause: 6 blocks at 200 ms, which is 1.2 seconds. Timestamps agree to 2 seconds.
+Divergence recorded: 2753 bps (27.53%). Source block echoed on both chains:
+59914213. Base block delta from the dump to the pause: 7 blocks at 200 ms, which is 1.4 seconds.
+Timestamps agree to 1 seconds.
 
 ## Measured latency, separately
 
@@ -96,7 +98,11 @@ src/GuardCallback.sol      destination side, authenticates the proxy and the rea
 src/Ping*.sol, PongSink    the latency harness used before the product was built
 tools/prepare_demo.py      fresh venues, guard, callbacks, reserves, calibration
 tools/attack.py            one dump, then block-timestamp timing of both pauses
-tools/build_film.py        builds docs/demo.mp4 from the cast, the cards and the page stills
+tools/build_subs.py        narration clips to one audio track plus the caption cues
+tools/render_film.py       builds docs/demo.mp4 from the cast, the cards, the stills and the captions
+tools/sync_page.py         rewrites the page config from demo.json and guard_result.json
+tools/sync_docs.py         rewrites the address and evidence tables in README and SUBMISSION
+tools/audit.py             links, on-chain truth, document consistency, video, repo hygiene
 docs/index.html            the live page (reads the three chains directly from the browser)
 scripts/verify.sh          one command, no wallet, exit code
 ```
@@ -104,6 +110,7 @@ scripts/verify.sh          one command, no wallet, exit code
 ```bash
 forge build && forge test        # 21 tests
 ./scripts/verify.sh              # checks the live deployment, no wallet needed
+python3 tools/audit.py           # links, chain truth, docs consistency, video, hygiene
 ```
 
 `tools/prepare_demo.py` and `tools/attack.py` send transactions and need a funded key in `.env`

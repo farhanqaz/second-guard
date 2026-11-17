@@ -62,7 +62,8 @@ def main():
     base, uni = demo["base"], demo["uni"]
     guard = demo["guard"]
 
-    print("price before", sh("cast", "call", base["pool"], "price()(uint256)", "--rpc-url", BASE_RPC).strip())
+    before = int(sh("cast", "call", base["pool"], "price()(uint256)", "--rpc-url", BASE_RPC).split()[0])
+    print("price before " + f"{before/1e18:.4f}", flush=True)
     dump = send(base["pool"], "swap(bool,uint256)", ["true", str(150 * 10**18)], rpc=BASE_RPC)
     attack_block = int(dump["blockNumber"], 16)
     attack_ts = block_ts(BASE_RPC, attack_block)
@@ -97,8 +98,22 @@ def main():
     uni_ts = block_ts(UNI_RPC, uni_block)
     d = base_log["data"][2:]
 
+    # the lasna side: the react execution that requested both callbacks
+    lasna_block, lasna_tx = None, None
+    try:
+        api = "https://lasna-api.reactscan.net/callbacks?page=1&sender=" + guard["address"]
+        payload = json.loads(urllib.request.urlopen(
+            urllib.request.Request(api, headers={"user-agent": "spike/1.0"}), timeout=20).read())
+        first = (payload.get("callbacks") or [None])[0]
+        if first:
+            lasna_block, lasna_tx = int(first["request_block_number"]), first["request_tx_hash"]
+    except Exception as exc:
+        print("notice: reactscan api unavailable (" + str(exc)[:60] + ")")
+
     result = {
         "attack": {"tx": dump["transactionHash"], "block": attack_block, "timestamp": attack_ts},
+        "lasna_block": lasna_block,
+        "lasna_tx": lasna_tx,
         "base": {"tx": base_log["transactionHash"], "block": base_block, "timestamp": base_ts,
                  "delta_s": base_ts - attack_ts, "blocks": base_block - attack_block,
                  "paused": "true" in sh("cast", "call", base["pool"], "paused()(bool)", "--rpc-url", BASE_RPC)},

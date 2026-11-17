@@ -3,23 +3,23 @@
     "chainId": 84532,
     "rpc": "https://sepolia.base.org",
     "proxy": "0x476F44b11F5C942c58f4C8E3d0300E5710743585",
-    "tokenA": "0x1bc76f7A9eb356F0A49cC2592D3f5E03320dACB3",
-    "tokenB": "0x29Df5831c35343e1edd0aE7fe271aF21fe398bf0",
-    "pool": "0x3c68028E292f2f8876b13C3F4b4d61b1CB03be75",
+    "tokenA": "0x6aB3b8dC2A9558DcdCd4DEdd514ce1b69Cc9E293",
+    "tokenB": "0x080079A3EC646E97dA7De8e4dCEA0Df98BEDD940",
+    "pool": "0x153f483ab58C67b6e11DebC514DBCB383d45d015",
     "price": "1000000000000000000"
   },
   "uni": {
     "chainId": 1301,
     "rpc": "https://sepolia.unichain.org",
     "proxy": "0x775c9B990ADe401060B78D0e98684eEf8d2466C1",
-    "tokenA": "0x2B892980F31D088Cd038aFBCE38a4a32102202Fc",
-    "tokenB": "0xAd10D1f0Da6b8C6C685a660293CA80Db71119f9a",
-    "pool": "0x07b3674a0c0097FD0b72fF0Eb7Ec7Dc1636DDe4e",
+    "tokenA": "0xf1826C1BB2b95FABd1e22e5452463608fFA7771F",
+    "tokenB": "0xA44E07bE459A008624E67dB7b3bD4210d0A6Ff40",
+    "pool": "0x02F44658aCC569d1bF27cF50223a35696DbA4878",
     "price": "1000000000000000000"
   },
   "guard": {
-    "address": "0x85408366c1AE50491755a75378e98F2B27469818",
-    "baseCallback": "0x020Ff8Fe9623F0450Bda921B66B9dCF7cbBd4565",
-    "uniCallback": "0xEFD031d9EA36c800b21fd0072B1CAaCA21721fEe"
+    "address": "0x7DaC6d62F8eEce510466014C64677E5223931BAf",
+    "baseCallback": "0x9826cE3430d8c9B7B413425755841E845b04002E",
+    "uniCallback": "0x93356Ae33DaE0cbCDA2E7a223c5D32564E0911f3"
   }
 }

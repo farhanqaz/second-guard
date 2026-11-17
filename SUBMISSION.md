@@ -11,7 +11,7 @@
 | Code | https://github.com/farhanqaz/second-guard |
 | Live page | https://farhanqaz.github.io/second-guard/ |
 | Demo video (59 s) | https://farhanqaz.github.io/second-guard/demo.mp4 |
-| Guard on Lasna | https://lasna.reactscan.net/address/0x85408366c1AE50491755a75378e98F2B27469818 |
+| Guard on Lasna | https://lasna.reactscan.net/address/0x7DaC6d62F8eEce510466014C64677E5223931BAf |
 
 ## What it is
 
@@ -24,25 +24,26 @@ across chains, so a single-chain watchdog cannot express this rule at all.
 
 | Contract | Chain | Address |
 |---|---|---|
-| DivergenceGuard | Reactive Lasna 5318007 | `0x85408366c1AE50491755a75378e98F2B27469818` |
-| GuardCallback | Base Sepolia 84532 | `0x020Ff8Fe9623F0450Bda921B66B9dCF7cbBd4565` |
-| GuardCallback | Unichain Sepolia 1301 | `0xEFD031d9EA36c800b21fd0072B1CAaCA21721fEe` |
-| MiniPool (ALPHA/BETA) | Base Sepolia 84532 | `0x3c68028E292f2f8876b13C3F4b4d61b1CB03be75` |
-| MiniPool (ALPHA/BETA) | Unichain Sepolia 1301 | `0x07b3674a0c0097FD0b72fF0Eb7Ec7Dc1636DDe4e` |
-| MiniERC20 ALPHA / BETA | Base Sepolia 84532 | `0x1bc76f7A9eb356F0A49cC2592D3f5E03320dACB3` / `0x29Df5831c35343e1edd0aE7fe271aF21fe398bf0` |
-| MiniERC20 ALPHA / BETA | Unichain Sepolia 1301 | `0x2B892980F31D088Cd038aFBCE38a4a32102202Fc` / `0xAd10D1f0Da6b8C6C685a660293CA80Db71119f9a` |
+| DivergenceGuard | Reactive Lasna 5318007 | `0x7DaC6d62F8eEce510466014C64677E5223931BAf` |
+| GuardCallback | Base Sepolia 84532 | `0x9826cE3430d8c9B7B413425755841E845b04002E` |
+| GuardCallback | Unichain Sepolia 1301 | `0x93356Ae33DaE0cbCDA2E7a223c5D32564E0911f3` |
+| MiniPool (ALPHA/BETA) | Base Sepolia 84532 | `0x153f483ab58C67b6e11DebC514DBCB383d45d015` |
+| MiniPool (ALPHA/BETA) | Unichain Sepolia 1301 | `0x02F44658aCC569d1bF27cF50223a35696DbA4878` |
+| MiniERC20 ALPHA / BETA | Base Sepolia 84532 | `0x6aB3b8dC2A9558DcdCd4DEdd514ce1b69Cc9E293` / `0x080079A3EC646E97dA7De8e4dCEA0Df98BEDD940` |
+| MiniERC20 ALPHA / BETA | Unichain Sepolia 1301 | `0xf1826C1BB2b95FABd1e22e5452463608fFA7771F` / `0xA44E07bE459A008624E67dB7b3bD4210d0A6Ff40` |
 
 ## The full loop, in hashes
 
 | Step | Transaction | Block |
 |---|---|---|
-| Origin event: dump 150 ALPHA, price 1.0000 to 1.3220 | `0x4a5db08d2810c4e7085c6c3948e63ee646e0288bdaaadb76282d1756e6ac083d` | 59906925 |
-| Reactive execution on Lasna (both callback requests) | `0xd3d0b16819539846aad41671a3d7ceb50df944b339e39145967da97e1c9f6609` | 8556174 |
-| Callback: Base venue paused | `0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48` | 59906931 |
-| Callback: Unichain venue paused | `0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a` | 68050827 |
+| Dump of 150 ALPHA on Base Sepolia, price 1.0000 to 1.3220 | `0x88efac938c064bcad5a642fdbcb6c130d4f539d75e5674d1c113a384564b58dd` | 59914213 |
+| Reactive execution on Lasna (both callback requests) | `0x7c377abe23561c03ce99e26f1af0a1023d2a3be24fcc90e297c0506b7e494625` | 8557547 |
+| Base venue paused by the guard | `0xa1f824cdc92dccb12cb990f365c96fb5d248b7b50a15ea8832f613ea89d30751` | 59914220 |
+| Unichain venue paused by the same event | `0xbd3e23498bc2062264c85575720f2a437b3344a9d9fe6af5022cb228e17f3113` | 68052285 |
 
-Recorded divergence 2753 bps. Source block 59906925 echoed on both chains. Dump to pause: 6 Base blocks at
-200 ms, which is **1.2 seconds**.
+Divergence recorded: 2753 bps (27.53%). Source block echoed on both chains:
+59914213. Base block delta from the dump to the pause: 7 blocks at 200 ms, which is 1.4 seconds.
+Timestamps agree to 1 seconds.
 
 ## Execution evidence
 

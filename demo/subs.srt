@@ -1,0 +1,59 @@
+1
+00:00:00,700 --> 00:00:03,519
+Two venues trade the same pair.
+
+2
+00:00:03,599 --> 00:00:06,964
+One on Base Sepolia, one on Unichain.
+
+3
+00:00:07,344 --> 00:00:10,512
+When they disagree, someone gets hurt.
+
+4
+00:00:10,892 --> 00:00:14,759
+Second Guard is a reactive contract on Reactive Lasna.
+
+5
+00:00:14,839 --> 00:00:21,356
+It watches a swap on both chains, holds both prices in its own state, and measures the gap.
+
+6
+00:00:21,736 --> 00:00:23,132
+Here is the attack.
+
+7
+00:00:23,212 --> 00:00:28,648
+A single dump pushes the Base venue thirty two percent away from its twin.
+
+8
+00:00:29,028 --> 00:00:31,159
+One event, two callbacks.
+
+9
+00:00:31,239 --> 00:00:36,012
+The rule fires in the same second, and both venues stop.
+
+10
+00:00:36,392 --> 00:00:39,564
+The gap was twenty seven hundred basis points.
+
+11
+00:00:39,644 --> 00:00:44,816
+The guard recorded the source block, and both chains carry the same number.
+
+12
+00:00:45,196 --> 00:00:46,302
+No keeper.
+
+13
+00:00:46,382 --> 00:00:47,487
+No relayer.
+
+14
+00:00:47,567 --> 00:00:49,502
+No off chain watcher.
+
+15
+00:00:49,582 --> 00:00:56,308
+Just one rule, living on chain, measured end to end in under two seconds.

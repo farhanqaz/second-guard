@@ -1,27 +1,29 @@
 {
   "attack": {
-    "tx": "0x4a5db08d2810c4e7085c6c3948e63ee646e0288bdaaadb76282d1756e6ac083d",
-    "block": 59906925,
-    "timestamp": 1794903253
+    "tx": "0x88efac938c064bcad5a642fdbcb6c130d4f539d75e5674d1c113a384564b58dd",
+    "block": 59914213,
+    "timestamp": 1794904711
   },
   "base": {
-    "tx": "0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48",
-    "block": 59906931,
-    "timestamp": 1794903255,
-    "delta_s": 2,
-    "blocks": 6,
+    "tx": "0xa1f824cdc92dccb12cb990f365c96fb5d248b7b50a15ea8832f613ea89d30751",
+    "block": 59914220,
+    "timestamp": 1794904712,
+    "delta_s": 1,
+    "blocks": 7,
     "paused": true
   },
   "uni": {
-    "tx": "0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a",
-    "block": 68050827,
-    "timestamp": 1794903255,
+    "tx": "0xbd3e23498bc2062264c85575720f2a437b3344a9d9fe6af5022cb228e17f3113",
+    "block": 68052285,
+    "timestamp": 1794904713,
     "delta_s": 2,
     "paused": true
   },
   "divergenceBps": 2753,
   "priceA": 1321982499999999999,
   "priceB": 1001997996999999999,
-  "sourceBlock": 59906925,
-  "guard": "0x85408366c1AE50491755a75378e98F2B27469818"
+  "sourceBlock": 59914213,
+  "guard": "0x7DaC6d62F8eEce510466014C64677E5223931BAf",
+  "lasna_block": 8557547,
+  "lasna_tx": "0x7c377abe23561c03ce99e26f1af0a1023d2a3be24fcc90e297c0506b7e494625"
 }
