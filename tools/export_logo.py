@@ -98,6 +98,29 @@ def lockup(path, dark=True, height=400):
     print(path.name, width, height)
 
 
+def square(path, size=1024, wordmark=False):
+    """Square tile for a project logo field: the mark centred, big enough to read at 64px."""
+    canvas = Image.new("RGBA", (size * S, size * S), CHARCOAL + (255,))
+    d = ImageDraw.Draw(canvas)
+    if not wordmark:
+        inset = int(size * 0.26) * S
+        box = size * S - 2 * inset
+        draw_mark(d, inset, inset, box, PAPER, OXIDE, RULE_ON_DARK)
+    else:
+        box = int(size * 0.70) * S
+        draw_mark(d, (size * S - box) // 2, int(size * 0.03) * S, box, PAPER, OXIDE, RULE_ON_DARK)
+        f = ImageFont.truetype(str(FONT_BOLD), int(size * 0.095) * S)
+        label = "SECOND GUARD"
+        tw = d.textlength(label, font=f)
+        d.text(((size * S - tw) // 2, int(size * 0.58) * S), label, font=f, fill=PAPER)
+        f2 = ImageFont.truetype(str(FONT_BOLD), int(size * 0.036) * S)
+        sub = "PARITY DESK"
+        tw2 = d.textlength(sub, font=f2)
+        d.text(((size * S - tw2) // 2, int(size * 0.69) * S), sub, font=f2, fill=RULE_ON_DARK)
+    canvas.resize((size, size), Image.LANCZOS).save(path)
+    print(path.name, size)
+
+
 def svg(path, dark=True):
     body = "#f2ece0" if dark else "#15130f"
     accent = "#e0654d"
@@ -124,6 +147,9 @@ def main():
     icon(OUT / "second-guard-avatar-1024.png", 1024, bg=CHARCOAL, pad_ratio=0.18)
     lockup(OUT / "second-guard-lockup-dark.png", dark=True)
     lockup(OUT / "second-guard-lockup-light.png", dark=False)
+    square(OUT / "second-guard-square-512.png", 512)
+    square(OUT / "second-guard-square-1024.png", 1024)
+    square(OUT / "second-guard-square-wordmark-1024.png", 1024, wordmark=True)
     svg(OUT / "second-guard-logo-dark.svg", dark=True)
     svg(OUT / "second-guard-logo-light.svg", dark=False)
 

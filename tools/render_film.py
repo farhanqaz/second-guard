@@ -30,16 +30,16 @@ def font(path, size):
 
 
 def mark(d, x, y, size=22, ink=PAPER, accent=AMBER):
-    """The parity mark: two markers on one rule, one filled, one open."""
+    """The parity mark: two venues on one rule, the rule broken between them. Same geometry as the site."""
     s = size / 32.0
     rule = (168, 160, 146)
-    d.line([(x + 4 * s, y + 21 * s), (x + 28 * s, y + 21 * s)], fill=rule, width=max(2, int(2.0 * s)))
-    r = 3.1 * s
-    cx, cy = x + 11 * s, y + 21 * s
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ink)
-    cx2 = x + 22 * s
-    d.ellipse([cx2 - r, cy - r, cx2 + r, cy + r], outline=accent, width=max(1, int(1.9 * s)))
-    d.line([(x + 16.5 * s, y + 7 * s), (x + 16.5 * s, y + 16 * s)], fill=rule, width=max(2, int(2.0 * s)))
+    cy = y + 16 * s
+    w = max(2, int(1.5 * s))
+    for a, b in ((x + 2.2 * s, x + 6.2 * s), (x + 26 * s, x + 29.8 * s)):
+        d.line([(a, cy), (b, cy)], fill=rule, width=w)
+    r = 3.6 * s
+    d.ellipse([x + 9.8 * s - r, cy - r, x + 9.8 * s + r, cy + r], fill=ink)
+    d.ellipse([x + 22.4 * s - r, cy - r, x + 22.4 * s + r, cy + r], outline=accent, width=max(2, int(2.2 * s)))
 
 
 def run(cmd):
