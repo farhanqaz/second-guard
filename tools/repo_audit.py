@@ -48,8 +48,8 @@ def main():
     hits = 0
     for t in tracked:
         p = ROOT / t
-        if not p.exists() or p.stat().st_size > 2_000_000:
-            continue
+        if not p.exists() or p.stat().st_size > 2_000_000 or p.name == "repo_audit.py":
+            continue  # the detector's own patterns are not secrets
         try:
             body = p.read_text(errors="ignore")
         except Exception:
