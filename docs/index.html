@@ -18,6 +18,10 @@
   h1{font-size:clamp(40px,6.4vw,84px);line-height:.96;letter-spacing:-.02em;margin:26px 0 0;font-weight:400}
   h1 em{font-style:italic;color:var(--amber)}
   .lede{max-width:56ch;margin:22px 0 0;font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:#cfc9bf}
+  .cta{display:inline-block;margin-top:28px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;
+       text-transform:uppercase;color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.5);
+       padding-bottom:4px}
+  .cta:hover{color:var(--paper);border-color:var(--paper)}
   .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:54px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
   .cell{padding:22px 22px 24px;border-right:1px solid var(--line)}
   .cell:last-child{border-right:0}
@@ -83,6 +87,8 @@
   <p class="lede">Second Guard watches the same pair on two chains. When the venues disagree past a threshold, it
   stops both of them in the same breath. No keeper, no relayer, no off-chain watcher. The rule itself lives on
   Reactive Lasna.</p>
+
+  <a class="cta" href="demo.mp4">Watch the 59 second demo</a>
 
   <div class="strip">
     <div class="cell"><div class="k">Base Sepolia · ALPHA/BETA</div><div class="v" id="pbase">···</div></div>
