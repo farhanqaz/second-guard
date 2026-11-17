@@ -1,22 +1,41 @@
-# Compiler files
+# Compiler output
 cache/
 out/
 broadcast/
 
-# Dotenv
+# Python
+__pycache__/
+*.pyc
+
+# Dotenv and anything key-shaped
 .env
 .env.*
 !.env.example
+*.key
+*.pem
+id_rsa*
 
-# Demo build intermediates. Keep the cast, the narration, the cards and the stills.
+# Logs and local state
+auto.log
+*.log
+
+# Demo build intermediates. The repo keeps the sources: attack.cast, vo*.mp3, page stills.
 demo/s1.mp4
 demo/s2.mp4
 demo/s3.mp4
 demo/s5.mp4
 demo/silent.mp4
+demo/captioned.mp4
+demo/probe.mp4
 demo/cast.mp4
 demo/concat.txt
 demo/frames/
+demo/cue*.png
+demo/cue*.txt
+demo/card1.png
+demo/card2.png
+demo/still_venues.png
+demo/still_feed.png
 demo/page_full.png
-
-auto.log
+demo/narration.mp3
+demo/narration2.wav
