@@ -1,10 +1,27 @@
 {
-  "attackTx": "0xa0714e02fdb50b2a17314975378fb46b1fc01a2fe3d5b2d7cc3f40d688da5b0b",
-  "attackBlock": 59901740,
-  "headAfter": 59901761,
-  "blocksElapsed": 21,
-  "secondsAt200ms": 4.2,
-  "basePaused": "true",
-  "uniPaused": "true",
-  "guard": "0xD48C67761aDa53158d85C1190bEdbf20aa20E4b8"
+  "attack": {
+    "tx": "0x4a5db08d2810c4e7085c6c3948e63ee646e0288bdaaadb76282d1756e6ac083d",
+    "block": 59906925,
+    "timestamp": 1794903253
+  },
+  "base": {
+    "tx": "0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48",
+    "block": 59906931,
+    "timestamp": 1794903255,
+    "delta_s": 2,
+    "blocks": 6,
+    "paused": true
+  },
+  "uni": {
+    "tx": "0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a",
+    "block": 68050827,
+    "timestamp": 1794903255,
+    "delta_s": 2,
+    "paused": true
+  },
+  "divergenceBps": 2753,
+  "priceA": 1321982499999999999,
+  "priceB": 1001997996999999999,
+  "sourceBlock": 59906925,
+  "guard": "0x85408366c1AE50491755a75378e98F2B27469818"
 }

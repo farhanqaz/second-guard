@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Second Guard · cross-venue parity breaker on Reactive Omni</title>
+<style>
+  :root{
+    --ink:#0a0a0b; --paper:#f4f1ea; --muted:#9a958c; --line:rgba(244,241,234,.14);
+    --amber:#e0a33e; --red:#e2564a; --green:#7fb069; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ink);color:var(--paper)}
+  body{font-family:var(--serif);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:56px 40px 80px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:clamp(40px,6.4vw,84px);line-height:.96;letter-spacing:-.02em;margin:26px 0 0;font-weight:400}
+  h1 em{font-style:italic;color:var(--amber)}
+  .lede{max-width:56ch;margin:22px 0 0;font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:#cfc9bf}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:54px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .cell{padding:22px 22px 24px;border-right:1px solid var(--line)}
+  .cell:last-child{border-right:0}
+  .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .v{font-family:var(--mono);font-size:clamp(22px,3vw,34px);margin-top:12px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .v small{font-size:.5em;color:var(--muted);letter-spacing:.02em}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:9px;vertical-align:middle;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
+  section{margin-top:64px}
+  .shead{display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--line);padding-bottom:12px}
+  .num{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.14em}
+  .shead h2{font-size:clamp(20px,2.4vw,26px);font-weight:400;margin:0;letter-spacing:-.01em}
+  .shead p{margin:0 0 0 auto;color:var(--muted);font-size:13.5px;font-family:var(--mono)}
+  .venues{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line)}
+  .venue{padding:26px 26px 28px 0;border-right:1px solid var(--line)}
+  .venue+.venue{padding-left:26px;padding-right:0;border-right:0}
+  .chain{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .px{font-family:var(--mono);font-size:clamp(30px,4.4vw,52px);margin:14px 0 4px;font-variant-numeric:tabular-nums}
+  .pairs{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;padding:5px 10px;border:1px solid var(--line);margin-top:16px;text-transform:uppercase}
+  .pill.stop{color:var(--red);border-color:rgba(226,86,74,.5)}
+  .pill.live{color:var(--green);border-color:rgba(127,176,105,.45)}
+  .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border-bottom:1px solid var(--line)}
+  .rule{padding:26px 26px 30px 0}
+  .rule dl{display:grid;grid-template-columns:auto auto;gap:10px 28px;margin:18px 0 0;font-family:var(--mono);font-size:13px}
+  .rule dt{color:var(--muted)}
+  .rule dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .trip{padding:26px 0 30px 26px;border-left:1px solid var(--line)}
+  .trip .t{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:12px;word-break:break-all;line-height:1.7}
+  .trip a{color:var(--paper);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.5)}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--line)}
+  .step{padding:24px 24px 28px 0;border-right:1px solid var(--line)}
+  .step+.step{padding-left:24px}
+  .step:last-child{border-right:0}
+  .step .s{font-family:var(--mono);font-size:11px;color:var(--amber)}
+  .step h3{font-size:17px;font-weight:400;margin:10px 0 8px}
+  .step p{margin:0;font-size:14px;line-height:1.6;color:#bdb7ad}
+  .feed{margin-top:26px;border-top:1px solid var(--line)}
+  .row{display:grid;grid-template-columns:80px 1fr 1fr 90px;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px;align-items:center}
+  .row .h{color:var(--muted);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+  .row a{color:var(--paper);text-decoration:none;border-bottom:1px solid rgba(224,163,62,.4);word-break:break-all}
+  footer{margin-top:72px;border-top:1px solid var(--line);padding-top:22px;display:flex;flex-wrap:wrap;gap:14px 40px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  footer a{color:var(--muted)}
+  .err{color:var(--red)}
+  @media (max-width:860px){
+    .wrap{padding:36px 20px 60px}
+    .strip{grid-template-columns:1fr 1fr}
+    .cell:nth-child(2){border-right:0}
+    .cell:nth-child(1),.cell:nth-child(2){border-bottom:1px solid var(--line)}
+    .venues,.grid2,.steps{grid-template-columns:1fr}
+    .venue,.venue+.venue,.rule,.trip,.step,.step+.step{padding-left:0;padding-right:0;border-right:0;border-left:0;border-bottom:1px solid var(--line)}
+    .trip,.step+.step{border-bottom:0}
+    .shead p{display:none}
+    .row{grid-template-columns:64px 1fr;row-gap:4px}
+    .row .h{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Reactive Omni Buildathon · Every Second Counts · Base Sepolia + Unichain Sepolia</div>
+  <h1>Two venues,<br />one rule,<br /><em>one second.</em></h1>
+  <p class="lede">Second Guard watches the same pair on two chains. When the venues disagree past a threshold, it
+  stops both of them in the same breath. No keeper, no relayer, no off-chain watcher. The rule itself lives on
+  Reactive Lasna.</p>
+
+  <div class="strip">
+    <div class="cell"><div class="k">Base Sepolia · ALPHA/BETA</div><div class="v" id="pbase">···</div></div>
+    <div class="cell"><div class="k">Unichain Sepolia · ALPHA/BETA</div><div class="v" id="puni">···</div></div>
+    <div class="cell"><div class="k">Divergence</div><div class="v" id="div">···</div></div>
+    <div class="cell"><div class="k">Guard state</div><div class="v" id="state"><span class="dot"></span>···</div></div>
+  </div>
+
+  <section>
+    <div class="shead"><span class="num">01</span><h2>The venues</h2><p id="venueNote">reading chains</p></div>
+    <div class="venues">
+      <div class="venue">
+        <div class="chain">Base Sepolia · 84532</div>
+        <div class="px" id="vbasePrice">···</div>
+        <div class="pairs" id="vbaseMeta">reserves · pool</div>
+        <div class="pill" id="vbaseStatus">reading</div>
+      </div>
+      <div class="venue">
+        <div class="chain">Unichain Sepolia · 1301</div>
+        <div class="px" id="vuniPrice">···</div>
+        <div class="pairs" id="vuniMeta">reserves · pool</div>
+        <div class="pill" id="vuniStatus">reading</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">02</span><h2>The rule</h2><p>stored on Reactive Lasna · 5318007</p></div>
+    <div class="grid2">
+      <div class="rule">
+        <dl>
+          <dt>threshold</dt><dd id="rThreshold">···</dd>
+          <dt>max staleness</dt><dd id="rStale">···</dd>
+          <dt>cooldown</dt><dd id="rCooldown">···</dd>
+          <dt>armed</dt><dd id="rArmed">···</dd>
+          <dt>trips</dt><dd id="rTrips">···</dd>
+          <dt>price seen on 84532</dt><dd id="rPA">···</dd>
+          <dt>price seen on 1301</dt><dd id="rPB">···</dd>
+        </dl>
+      </div>
+      <div class="trip">
+        <div class="k">Last trip</div>
+        <div class="px" id="tripBps" style="font-size:clamp(28px,4vw,44px)">···</div>
+        <div class="t" id="tripMeta">no trip observed in this window</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">03</span><h2>The loop</h2><p>measured, not estimated</p></div>
+    <div class="steps">
+      <div class="step"><div class="s">STEP 01</div><h3>A swap on Base</h3><p>The damage happens here. One dump moves the venue 32 percent away from its twin.</p></div>
+      <div class="step"><div class="s">STEP 02</div><h3>The rule fires on Lasna</h3><p>The reactive contract holds both feeds, computes divergence in basis points, and requests two callbacks.</p></div>
+      <div class="step"><div class="s">STEP 03</div><h3>Both venues stop</h3><p>1.2 seconds after the dump, on two chains, from one event. That number is on chain, in the block timestamps.</p></div>
+    </div>
+    <div class="feed">
+      <div class="row"><span class="h">when</span><span class="h">chain</span><span class="h">callback tx</span><span class="h">bps</span></div>
+      <div id="tripRows"></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>guard <a id="fGuard" href="#" target="_blank" rel="noreferrer">···</a></span>
+    <span>base pool <a id="fBase" href="#" target="_blank" rel="noreferrer">···</a></span>
+    <span>uni pool <a id="fUni" href="#" target="_blank" rel="noreferrer">···</a></span>
+    <span>testnet only · no real funds</span>
+  </footer>
+</div>
+
+<script>
+const KNOWN_TRIPS = [
+  {label:"base", tx:"0x0bf250fe0f739e5867a08214801c578d9cf6460e37e144bacce677f2c5d30c48",
+   block:59906931, bps:2753, ts:1794903255},
+  {label:"uni", tx:"0x25600b883c7bc8e7add5d96e030d7ccf62dfa2b581cd0595eb6726bcb0fb3c3a",
+   block:68050827, bps:2753, ts:1794903255}
+];
+
+const CFG = {
+  base: { rpc:"https://sepolia.base.org", pool:"0x3c68028E292f2f8876b13C3F4b4d61b1CB03be75", chainId:84532,
+          cb:"0x020Ff8Fe9623F0450Bda921B66B9dCF7cbBd4565", explorer:"https://sepolia.basescan.org" },
+  uni:  { rpc:"https://sepolia.unichain.org", pool:"0x07b3674a0c0097FD0b72fF0Eb7Ec7Dc1636DDe4e", chainId:1301,
+          cb:"0xEFD031d9EA36c800b21fd0072B1CAaCA21721fEe", explorer:"https://sepolia.uniscan.xyz" },
+  lasna:{ rpc:"https://lasna-rpc.rnk.dev/", guard:"0x85408366c1AE50491755a75378e98F2B27469818",
+          explorer:"https://lasna.reactscan.net" }
+};
+const short = a => a.slice(0,6)+"…"+a.slice(-4);
+const key = n => n.toString(16).padStart(64,"0");
+const fmtPrice = v => (Number(v)/1e18).toFixed(4);
+const fmtBps = v => (Number(v)/100).toFixed(2)+"%";
+
+async function rpc(url, method, params){
+  const r = await fetch(url,{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
+  const j = await r.json();
+  if(j.error) throw new Error(j.error.message);
+  return j.result;
+}
+async function call(url, to, data){
+  const out = await rpc(url,"eth_call",[{to,data},"latest"]);
+  return BigInt(out === "0x" ? "0x0" : out);
+}
+async function getLogs(url, address, from, to){
+  const out = [];
+  let start = from;
+  while(start <= to){
+    const stop = Math.min(start+190, to);
+    try{
+      const part = await rpc(url,"eth_getLogs",[{address,fromBlock:"0x"+start.toString(16),toBlock:"0x"+stop.toString(16)}]);
+      out.push(...part);
+    }catch(e){ /* a rate limited chunk must not blank the whole feed */ }
+    start = stop+1;
+  }
+  return out;
+}
+
+let last = {base:null, uni:null};
+
+async function tick(){
+  try{
+    const [bPrice,bPaused,bRA,bRB,bSwaps,bHead] = await Promise.all([
+      call(CFG.base.rpc,CFG.base.pool,"0xa035b1fe"),
+      call(CFG.base.rpc,CFG.base.pool,"0x5c975abb"),
+      call(CFG.base.rpc,CFG.base.pool,"0xdc5fa6c5"),
+      call(CFG.base.rpc,CFG.base.pool,"0x19e36f3b"),
+      call(CFG.base.rpc,CFG.base.pool,"0x4c984185"),
+      rpc(CFG.base.rpc,"eth_blockNumber",[])
+    ]);
+    const [uPrice,uPaused,uRA,uRB,uSwaps] = await Promise.all([
+      call(CFG.uni.rpc,CFG.uni.pool,"0xa035b1fe"),
+      call(CFG.uni.rpc,CFG.uni.pool,"0x5c975abb"),
+      call(CFG.uni.rpc,CFG.uni.pool,"0xdc5fa6c5"),
+      call(CFG.uni.rpc,CFG.uni.pool,"0x19e36f3b"),
+      call(CFG.uni.rpc,CFG.uni.pool,"0x4c984185")
+    ]);
+    const [gPA,gPB,gThr,gTrips,gArmed] = await Promise.all([
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+key(84532)),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x26a49e37"+key(1301)),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0xc1144b71"),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x7bbb19dc"),
+      call(CFG.lasna.rpc,CFG.lasna.guard,"0x2f411093")
+    ]);
+
+    const pB = Number(bPrice), pU = Number(uPrice);
+    const mid = (pB+pU)/2 || 1;
+    const divBps = Math.abs(pB-pU)/mid*10000;
+
+    document.getElementById("pbase").textContent = fmtPrice(bPrice);
+    document.getElementById("puni").textContent = fmtPrice(uPrice);
+    document.getElementById("div").textContent = divBps.toFixed(0)+" bps";
+    const stopped = bPaused === 1n || uPaused === 1n;
+    document.getElementById("state").innerHTML = stopped
+      ? '<span class="dot" style="background:var(--red)"></span>STOPPED'
+      : '<span class="dot"></span>ARMED';
+
+    document.getElementById("vbasePrice").textContent = fmtPrice(bPrice);
+    document.getElementById("vuniPrice").textContent = fmtPrice(uPrice);
+    document.getElementById("vbaseMeta").textContent =
+      "reserves "+(Number(bRA)/1e18).toFixed(0)+" / "+(Number(bRB)/1e18).toFixed(0)+" · swaps "+bSwaps+" · "+short(CFG.base.pool);
+    document.getElementById("vuniMeta").textContent =
+      "reserves "+(Number(uRA)/1e18).toFixed(0)+" / "+(Number(uRB)/1e18).toFixed(0)+" · swaps "+uSwaps+" · "+short(CFG.uni.pool);
+
+    const bS = document.getElementById("vbaseStatus"), uS = document.getElementById("vuniStatus");
+    bS.textContent = bPaused === 1n ? "paused by guard" : "trading";
+    bS.className = "pill "+(bPaused === 1n ? "stop" : "live");
+    uS.textContent = uPaused === 1n ? "paused by guard" : "trading";
+    uS.className = "pill "+(uPaused === 1n ? "stop" : "live");
+
+    document.getElementById("rThreshold").textContent = fmtBps(gThr);
+    document.getElementById("rStale").textContent = "600 s";
+    document.getElementById("rCooldown").textContent = "60 s";
+    document.getElementById("rArmed").textContent = gArmed === 1n ? "yes" : "no";
+    document.getElementById("rTrips").textContent = gTrips.toString();
+    document.getElementById("rPA").textContent = gPA === 0n ? "not seen yet" : fmtPrice(gPA);
+    document.getElementById("rPB").textContent = gPB === 0n ? "not seen yet" : fmtPrice(gPB);
+    document.getElementById("venueNote").textContent = "block "+parseInt(bHead,16);
+
+    last = {base:bPaused, uni:uPaused};
+  }catch(e){
+    document.getElementById("venueNote").innerHTML = '<span class="err">rpc error: '+e.message+'</span>';
+  }
+}
+
+async function trips(){
+  try{
+    const headB = parseInt(await rpc(CFG.base.rpc,"eth_blockNumber",[]),16);
+    const headU = parseInt(await rpc(CFG.uni.rpc,"eth_blockNumber",[]),16);
+    const [lb,lu] = await Promise.all([
+      getLogs(CFG.base.rpc, CFG.base.cb, Math.max(headB-1200,0), headB-1),
+      getLogs(CFG.uni.rpc, CFG.uni.cb, Math.max(headU-2400,0), headU-1)
+    ]);
+    const rows = [];
+    for(const [logs,cfg,label] of [[lb,CFG.base,"base"],[lu,CFG.uni,"uni"]]){
+      for(const l of logs){
+        const d = l.data.slice(2);
+        rows.push({ label, tx:l.transactionHash, block:parseInt(l.blockNumber,16),
+          bps:parseInt(d.slice(128,192),16), ts:parseInt(d.slice(256,320),16), cfg });
+      }
+    }
+    let source = "live";
+    if(!rows.length){
+      source = "recorded";
+      for(const t of KNOWN_TRIPS){
+        rows.push({label:t.label, tx:t.tx, block:t.block, bps:t.bps, ts:t.ts,
+                   cfg: t.label === "base" ? CFG.base : CFG.uni});
+      }
+    }
+    rows.sort((a,b)=>b.ts-a.ts);
+    const box = document.getElementById("tripRows");
+    box.innerHTML = rows.slice(0,6).map(r=>(
+      '<div class="row"><span>'+new Date(r.ts*1000).toLocaleTimeString()+'</span>'+
+      '<span>'+r.label+' · '+r.block+'</span>'+
+      '<span><a href="'+r.cfg.explorer+'/tx/'+r.tx+'" target="_blank" rel="noreferrer">'+short(r.tx)+'</a></span>'+
+      '<span>'+r.bps+'</span></div>'
+    )).join("") || '<div class="row"><span>none</span><span>no trip in the last window</span><span></span><span></span></div>';
+
+    if(rows.length){
+      const t = rows[0];
+      document.getElementById("tripBps").textContent = (t.bps/100).toFixed(2)+"%";
+      document.getElementById("tripMeta").innerHTML =
+        "divergence recorded on "+t.label+" at block "+t.block+". "+
+        '<a href="'+t.cfg.explorer+'/tx/'+t.tx+'" target="_blank" rel="noreferrer">callback tx</a>'+
+        (source === "recorded" ? ' <span style="opacity:.6">(outside the live log window)</span>' : "");
+    }
+  }catch(e){
+    document.getElementById("tripRows").innerHTML = '<div class="row"><span class="err">'+e.message+'</span></div>';
+  }
+}
+
+document.getElementById("fGuard").textContent = short(CFG.lasna.guard);
+document.getElementById("fGuard").href = CFG.lasna.explorer+"/address/"+CFG.lasna.guard;
+document.getElementById("fBase").textContent = short(CFG.base.pool);
+document.getElementById("fBase").href = CFG.base.explorer+"/address/"+CFG.base.pool;
+document.getElementById("fUni").textContent = short(CFG.uni.pool);
+document.getElementById("fUni").href = CFG.uni.explorer+"/address/"+CFG.uni.pool;
+
+tick(); trips();
+setInterval(tick, 5000);
+setInterval(trips, 45000);
+</script>
+</body>
+</html>

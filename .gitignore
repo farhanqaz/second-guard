@@ -1,25 +1,20 @@
 # Compiler files
 cache/
 out/
+broadcast/
 
-# Commonly ignored directories
-.logs/
-.ignore/
-
-# Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
-
-# Docs
-docs/
-
-# Dotenv file
+# Dotenv
 .env
 .env.*
 !.env.example
 
-.env
-out/
-cache/
-broadcast/
+# Demo build intermediates. Keep the cast, the narration, the cards and the stills.
+demo/s1.mp4
+demo/s2.mp4
+demo/s3.mp4
+demo/s5.mp4
+demo/silent.mp4
+demo/cast.mp4
+demo/concat.txt
+demo/frames/
+demo/page_full.png
