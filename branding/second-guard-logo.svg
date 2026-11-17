@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Second Guard</title>
+  <desc>Two markers on one rule, one filled, one open, with a tick pointing at the gap between them.</desc>
+  <g stroke="#968f82" stroke-width="15" stroke-linecap="round">
+    <line x1="35" y1="307" x2="99" y2="307"/>
+    <line x1="416" y1="307" x2="477" y2="307"/>
+  </g>
+  <circle cx="157" cy="307" r="58" fill="#f2ece0"/>
+  <circle cx="358" cy="307" r="58" fill="none" stroke="#e0654d" stroke-width="29"/>
+</svg>
