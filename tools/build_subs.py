@@ -47,24 +47,38 @@ def main():
     clips = [DEMO / f"vo{i}.mp3" for i in range(1, len(LINES) + 1)]
     durs = [probe(c) for c in clips]
 
-    cues, t = [], LEAD
-    for line, dur in zip(LINES, durs):
+    cues, spans, t = [], [], LEAD
+    for clip_i, (line, dur) in enumerate(zip(LINES, durs)):
+        # the clip owns a span of the timeline; the captions are carved out of that span
+        clip_start = t
+        spans.append((clip_start, clip_start + dur))
         # split a clip into sentence cues so no caption sits on screen for ten seconds
         parts = [s.strip() for s in re.split(r"(?<=[.!?])\s+", line) if s.strip()]
         weights = [max(len(s), 12) for s in parts]
         span = dur - 0.08 * (len(parts) - 1)
+        ct = clip_start
         for part, w in zip(parts, weights):
             share = span * w / sum(weights)
-            cues.append({"start": round(t, 3), "end": round(t + share, 3), "text": part})
-            t += share + 0.08
-        t += GAP
+            cues.append({"start": round(ct, 3), "end": round(ct + share, 3), "text": part,
+                         "clip": clip_i})
+            ct += share + 0.08
+        t = clip_start + dur + GAP
     total = t
 
-    # audio: lead-in silence, then each clip at its cue start, summed
+    # one voice must never start before the previous one ends
+    for (s0, e0), (s1, e1) in zip(spans, spans[1:]):
+        assert s1 >= e0, f"voice collision: {e0:.2f} then {s1:.2f}"
+    for cue in cues:  # captions stay inside the clip they belong to
+        s, e = spans[cue["clip"]]
+        assert cue["start"] >= s - 1e-6 and cue["end"] <= e + 1e-6, \
+            f"cue outside its clip: {cue['text'][:30]} {cue['start']}-{cue['end']} vs {s:.2f}-{e:.2f}"
+        cue.pop("clip")
+
+    # audio: lead-in silence, then each clip at its own start, summed
     inputs, filters, labels = [], [], []
-    for i, (clip, cue) in enumerate(zip(clips, cues)):
+    for i, (clip, (start, _)) in enumerate(zip(clips, spans)):
         inputs += ["-i", str(clip)]
-        delay = int(cue["start"] * 1000)
+        delay = int(start * 1000)
         filters.append(f"[{i}:a]aresample=48000,adelay={delay}|{delay}[a{i}]")
         labels.append(f"[a{i}]")
     fc = ";".join(filters) + ";" + "".join(labels) + f"amix=inputs={len(clips)}:normalize=0,apad=whole_dur={total}[out]"

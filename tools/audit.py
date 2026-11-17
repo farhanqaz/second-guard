@@ -6,6 +6,7 @@ Exit code 1 if any hard check fails.
 """
 import json
 import pathlib
+import sys
 import re
 import subprocess
 import urllib.request
@@ -193,6 +194,25 @@ def main():
         ok(f"{len(cues)} burned-in caption cues")
     else:
         bad("captions missing or too few")
+
+    # narration must never stack: each voice clip has to start after the previous one ends
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import build_subs as bs
+        vo = [bs.DEMO / f"vo{i}.mp3" for i in range(1, len(bs.LINES) + 1)]
+        durs = [bs.probe(c) for c in vo]
+        t, spans = bs.LEAD, []
+        for d in durs:
+            spans.append((t, t + d))
+            t += d + bs.GAP
+        overlap = [(round(a, 2), round(b, 2)) for (_, a), (b, _) in zip(spans, spans[1:]) if b < a]
+        inside = all(any(s - 1e-6 <= c["start"] <= e for s, e in spans) for c in cues)
+        if not overlap and inside:
+            ok(f"narration is sequential: {len(vo)} clips, {t:.1f}s total, no overlap")
+        else:
+            bad(f"narration overlaps at {overlap} or a cue sits outside its clip")
+    except Exception as e:
+        note(f"could not check narration timing: {e}")
 
     # -------------------------------------------------------------- hygiene
     tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()

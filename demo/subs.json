@@ -10,68 +10,68 @@
   "text": "One on Base Sepolia, one on Unichain."
  },
  {
-  "start": 7.344,
-  "end": 10.512,
+  "start": 7.264,
+  "end": 10.432,
   "text": "When they disagree, someone gets hurt."
  },
  {
-  "start": 10.892,
-  "end": 14.759,
+  "start": 10.732,
+  "end": 14.599,
   "text": "Second Guard is a reactive contract on Reactive Lasna."
  },
  {
-  "start": 14.839,
-  "end": 21.356,
+  "start": 14.679,
+  "end": 21.196,
   "text": "It watches a swap on both chains, holds both prices in its own state, and measures the gap."
  },
  {
-  "start": 21.736,
-  "end": 23.132,
+  "start": 21.496,
+  "end": 22.892,
   "text": "Here is the attack."
  },
  {
-  "start": 23.212,
-  "end": 28.648,
+  "start": 22.972,
+  "end": 28.408,
   "text": "A single dump pushes the Base venue thirty two percent away from its twin."
  },
  {
-  "start": 29.028,
-  "end": 31.159,
+  "start": 28.708,
+  "end": 30.839,
   "text": "One event, two callbacks."
  },
  {
-  "start": 31.239,
-  "end": 36.012,
+  "start": 30.919,
+  "end": 35.692,
   "text": "The rule fires in the same second, and both venues stop."
  },
  {
-  "start": 36.392,
-  "end": 39.564,
+  "start": 35.992,
+  "end": 39.164,
   "text": "The gap was twenty seven hundred basis points."
  },
  {
-  "start": 39.644,
-  "end": 44.816,
+  "start": 39.244,
+  "end": 44.416,
   "text": "The guard recorded the source block, and both chains carry the same number."
  },
  {
-  "start": 45.196,
-  "end": 46.302,
+  "start": 44.716,
+  "end": 45.822,
   "text": "No keeper."
  },
  {
-  "start": 46.382,
-  "end": 47.487,
+  "start": 45.902,
+  "end": 47.007,
   "text": "No relayer."
  },
  {
-  "start": 47.567,
-  "end": 49.502,
+  "start": 47.087,
+  "end": 49.022,
   "text": "No off chain watcher."
  },
  {
-  "start": 49.582,
-  "end": 56.308,
+  "start": 49.102,
+  "end": 55.828,
   "text": "Just one rule, living on chain, measured end to end in under two seconds."
  }
 ]
