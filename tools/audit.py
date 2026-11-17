@@ -205,7 +205,7 @@ def main():
         p = ROOT / t
         if p.suffix in (".py", ".sh", ".html", ".md", ".json") and p.exists():
             body = p.read_text(errors="ignore")
-            if "/home/dell" in body:
+            if str(pathlib.Path.home()) in body:
                 leaky.append(t)
     if leaky:
         bad("absolute machine paths in tracked files: " + ", ".join(leaky[:5]))
