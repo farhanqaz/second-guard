@@ -1,0 +1,10 @@
+{
+  "attackTx": "0xa0714e02fdb50b2a17314975378fb46b1fc01a2fe3d5b2d7cc3f40d688da5b0b",
+  "attackBlock": 59901740,
+  "headAfter": 59901761,
+  "blocksElapsed": 21,
+  "secondsAt200ms": 4.2,
+  "basePaused": "true",
+  "uniPaused": "true",
+  "guard": "0xD48C67761aDa53158d85C1190bEdbf20aa20E4b8"
+}

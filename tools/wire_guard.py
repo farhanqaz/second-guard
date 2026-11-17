@@ -91,6 +91,11 @@ def main():
     demo["guard"] = {"address": guard, "tx": guard_tx, "baseCallback": base_cb, "uniCallback": uni_cb}
     (ROOT / "demo.json").write_text(json.dumps(demo, indent=2))
 
+    # calibrate the second feed: a small swap makes the guard learn the uni price
+    calib = send(uni["pool"], "swap(bool,uint256)", ["true", str(1 * 10**18)], rpc=uni["rpc"])
+    print("uni calibration", calib["transactionHash"])
+    time.sleep(8)
+
     # one attack: dump the base venue, watch the guard stop both
     head = int(rpc(BASE_LOG_RPC, "eth_blockNumber", [])["result"], 16)
     dump = send(

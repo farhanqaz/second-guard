@@ -1,10 +1,26 @@
 # Reactive Omni spike: full-loop latency
 
-Throwaway spike for the Reactive Omni Buildathon. It answers one question before any product
-gets built: **how long does one event take to travel origin chain -> Reactive Lasna -> callback
-back to the origin chain, measured on real testnets?**
+Throwaway spike for the Reactive Omni Buildathon. Two questions, both answered with live testnets:
 
-## Result (measured, not estimated)
+1. How long does one event take to travel origin chain -> Reactive Lasna -> callback back? (the latency spike)
+2. Can a reactive contract watch the same pair on two chains and stop both venues when they diverge? (the product)
+
+## Product result: cross-venue divergence guard, live
+
+One dump on the Base Sepolia venue moved its price 32%. The guard saw both feeds, computed 2753 bps of
+divergence, and paused both venues through two separate callbacks in the same second.
+
+| Evidence | Value |
+|---|---|
+| Attack tx (Base Sepolia) | `0xa0714e02fdb50b2a17314975378fb46b1fc01a2fe3d5b2d7cc3f40d688da5b0b` at block 59901740 |
+| Base pause callback | `0x9fcf78f1b779c31d21552dff340bc9cf5ac739e89648e6fd017f41a5e81bf544` block 59901746 |
+| Unichain pause callback | `0xd9cfb89baaaab0a8bd3ba03879105b00f7e471a075c6fd7c2356fd1c5e70ca74` block 68049790 |
+| Divergence recorded | 2753 bps (price A 1.322, price B 1.002) |
+| Source block echoed on both chains | 59901740 |
+| Time from dump to both venues paused | 6 Base blocks = 1.2 s, 2 s by timestamp |
+| Guard on Lasna | `0xD48C67761aDa53158d85C1190bEdbf20aa20E4b8` |
+
+## Latency result (measured, not estimated)
 
 Four runs on 17 Nov 2026, Base Sepolia (84532) -> Reactive Lasna (5318007) -> Base Sepolia:
 
