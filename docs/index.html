@@ -10,7 +10,8 @@
     if(saved === "light") document.documentElement.dataset.theme = "light";
   }catch(e){}
 </script>
-<meta name="description" content="Cross-venue parity breaker on Reactive Omni. Two venues, one rule, 1.2 seconds." />
+<meta name="description" content="Cross-venue parity breaker on Reactive Omni. Two venues, one rule, measured under two seconds." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <style>
   @font-face{font-family:"Bricolage";src:url("fonts/bricolage-grotesque-400-700.woff2") format("woff2");
     font-weight:400 700;font-style:normal;font-display:swap}
@@ -41,6 +42,8 @@
   .bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--ink);
     display:flex;align-items:center;gap:24px;padding:14px 28px;font-family:var(--mono);font-size:11px;
     letter-spacing:.12em;text-transform:uppercase}
+  .brand{display:flex;align-items:center;gap:10px}
+  .glyph{width:22px;height:22px;flex:none;color:var(--ink)}
   .mark{font-family:var(--grotesk);font-size:15px;font-weight:700;letter-spacing:-.01em;text-transform:none}
   .mark span{color:var(--oxide)}
   .bar .mid{color:var(--muted)}
@@ -158,7 +161,15 @@
 <body>
 
 <div class="bar">
-  <div class="mark">Second<span>·</span>Guard</div>
+  <div class="brand">
+    <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true">
+      <line x1="5" y1="21" x2="27" y2="21" stroke="currentColor" stroke-opacity=".45" stroke-width="1.6"/>
+      <circle cx="11" cy="21" r="3.1" fill="currentColor"/>
+      <circle cx="22" cy="21" r="3.1" fill="none" stroke="var(--oxide)" stroke-width="1.9"/>
+      <line x1="16.5" y1="8.5" x2="16.5" y2="16" stroke="currentColor" stroke-opacity=".45" stroke-width="1.6"/>
+    </svg>
+    <span class="mark">Second<span>·</span>Guard</span>
+  </div>
   <div class="mid">parity risk desk · base sepolia / unichain sepolia</div>
   <div class="right">
     <button class="themebtn" id="theme" type="button" aria-pressed="true">light</button>

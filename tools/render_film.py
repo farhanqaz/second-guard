@@ -29,6 +29,19 @@ def font(path, size):
     return ImageFont.truetype(path, size)
 
 
+def mark(d, x, y, size=22, ink=PAPER, accent=AMBER):
+    """The parity mark: two markers on one rule, one filled, one open."""
+    s = size / 32.0
+    rule = (168, 160, 146)
+    d.line([(x + 4 * s, y + 21 * s), (x + 28 * s, y + 21 * s)], fill=rule, width=max(2, int(2.0 * s)))
+    r = 3.1 * s
+    cx, cy = x + 11 * s, y + 21 * s
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ink)
+    cx2 = x + 22 * s
+    d.ellipse([cx2 - r, cy - r, cx2 + r, cy + r], outline=accent, width=max(1, int(1.9 * s)))
+    d.line([(x + 16.5 * s, y + 7 * s), (x + 16.5 * s, y + 16 * s)], fill=rule, width=max(2, int(2.0 * s)))
+
+
 def run(cmd):
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
@@ -44,7 +57,8 @@ def dur(path):
 def card_one(path):
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
-    d.text((72, 64), "SECOND GUARD   ·   REACTIVE OMNI BUILDATHON", font=font(MONO, 15), fill=MUTED)
+    mark(d, 72, 46, 26)
+    d.text((112, 64), "SECOND GUARD   ·   REACTIVE OMNI BUILDATHON", font=font(MONO, 15), fill=MUTED)
     d.text((72, 170), "Two venues trade", font=font(SERIF, 62), fill=PAPER)
     d.text((72, 246), "the same pair.", font=font(SERIF, 62), fill=PAPER)
     d.text((72, 356), "The gap between them is the attack surface.", font=font(SERIF, 40), fill=AMBER)
@@ -59,7 +73,8 @@ def card_two(path):
     res = json.loads((ROOT / "guard_result.json").read_text())
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
-    d.text((72, 64), "PROOF   ·   ON CHAIN", font=font(MONO, 15), fill=MUTED)
+    mark(d, 72, 46, 26)
+    d.text((112, 64), "PROOF   ·   ON CHAIN", font=font(MONO, 15), fill=MUTED)
     seconds = round(res["base"]["blocks"] * 0.2, 1)
     d.text((72, 130), f"One event. Two chains. {seconds} seconds.", font=font(SERIF, 46), fill=PAPER)
     rows = [
