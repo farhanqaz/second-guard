@@ -1,1 +1,0 @@
-Second Guard is a reactive contract on Reactive Lasna.

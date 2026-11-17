@@ -1,1 +1,0 @@
-The rule fires in the same second, and both venues stop.
