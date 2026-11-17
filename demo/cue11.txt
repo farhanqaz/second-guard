@@ -1,2 +1,2 @@
-The guard recorded the source block, and both chains
-carry the same number.
+The guard recorded the source block, and both chains carry the same
+number.

@@ -4,6 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Second Guard · parity desk</title>
+<script>
+  try{
+    var saved = localStorage.getItem("sg-theme");
+    if(saved === "light") document.documentElement.dataset.theme = "light";
+  }catch(e){}
+</script>
 <meta name="description" content="Cross-venue parity breaker on Reactive Omni. Two venues, one rule, 1.2 seconds." />
 <style>
   @font-face{font-family:"Bricolage";src:url("fonts/bricolage-grotesque-400-700.woff2") format("woff2");
@@ -14,9 +20,16 @@
     font-weight:500;font-style:normal;font-display:swap}
 
   :root{
+    /* dark is the default: warm charcoal, not neon on black */
+    --paper:#14120f; --paper-2:#1c1914; --ink:#f2ece0; --ink-2:#cfc6b4;
+    --muted:#9a9184; --line:#332f28; --oxide:#e0654d; --olive:#9abf74;
+    --grotesk:"Bricolage",system-ui,sans-serif; --mono:"Plex Mono",ui-monospace,monospace;
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
     --paper:#efe9dc; --paper-2:#e6ddca; --ink:#15130f; --ink-2:#3b362c;
     --muted:#7b7264; --line:#cdc3ae; --oxide:#a23127; --olive:#4b6536;
-    --grotesk:"Bricolage",system-ui,sans-serif; --mono:"Plex Mono",ui-monospace,monospace;
+    color-scheme:light;
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -35,6 +48,10 @@
   .tag{border:1px solid var(--ink);padding:3px 8px;letter-spacing:.1em}
   .tag.stop{border-color:var(--oxide);color:var(--oxide)}
   .tag.live{border-color:var(--olive);color:var(--olive)}
+  .themebtn{font:inherit;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:none;
+    border:1px solid var(--line);padding:6px 10px;cursor:pointer;min-height:29px}
+  .themebtn:hover{color:var(--ink);border-color:var(--ink)}
+  .themebtn:focus-visible{outline:2px solid var(--oxide);outline-offset:2px}
 
   .shell{display:grid;grid-template-columns:248px minmax(0,1fr);max-width:1440px;margin:0 auto}
   .rail{border-right:1px solid var(--line);padding:26px 22px 40px;position:sticky;top:49px;
@@ -131,6 +148,7 @@
     .jrow{grid-template-columns:64px 1fr 60px;row-gap:4px}
     .jrow .b,.jrow .tx{display:none}
     .bar{gap:12px;padding:12px 16px;flex-wrap:wrap}
+    .themebtn{min-height:36px;padding:8px 12px}
     .bar .mid{display:none}
     footer{padding:18px 20px}
   }
@@ -143,6 +161,7 @@
   <div class="mark">Second<span>·</span>Guard</div>
   <div class="mid">parity risk desk · base sepolia / unichain sepolia</div>
   <div class="right">
+    <button class="themebtn" id="theme" type="button" aria-pressed="true">light</button>
     <span id="clock">--:--:--</span>
     <span class="tag" id="tag">reading</span>
   </div>
@@ -447,6 +466,22 @@ async function journal(){
 function clock(){
   $("clock").textContent = new Date().toTimeString().slice(0,8) + " local";
 }
+
+const themeBtn = $("theme");
+function paintTheme(){
+  const dark = document.documentElement.dataset.theme !== "light";
+  themeBtn.textContent = dark ? "light" : "dark";
+  themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+  themeBtn.setAttribute("aria-label", dark ? "switch to light mode" : "switch to dark mode");
+}
+themeBtn.addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme !== "light";
+  if(dark){ document.documentElement.dataset.theme = "light"; }
+  else { delete document.documentElement.dataset.theme; }
+  try{ localStorage.setItem("sg-theme", dark ? "light" : "dark"); }catch(e){}
+  paintTheme();
+});
+paintTheme();
 document.querySelectorAll("[data-copy]").forEach(b => {
   b.addEventListener("click", async () => {
     try{ await navigator.clipboard.writeText(b.textContent.trim()); b.textContent = "copied"; setTimeout(() => location.reload(), 700); }

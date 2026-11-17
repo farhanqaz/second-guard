@@ -79,8 +79,8 @@ def card_two(path):
     d.line((72, 486, W - 72, 486), fill=(48, 48, 50), width=1)
     d.text((72, 508), f"{bps} bps divergence   ·   source block {src} echoed on both chains",
            font=font(MONO, 16), fill=AMBER)
-    d.text((72, 536), "guard 0x85408366c1AE50491755a75378e98F2B27469818  ·  Lasna",
-           font=font(MONO, 15), fill=MUTED)
+    guard_addr = json.loads((ROOT / "demo.json").read_text())["guard"]["address"]
+    d.text((72, 536), f"guard {guard_addr}  ·  Lasna", font=font(MONO, 15), fill=MUTED)
     d.text((72, 564), "github.com/farhanqaz/second-guard  ·  farhanqaz.github.io/second-guard",
            font=font(MONO, 14), fill=MUTED)
     img.save(path)
@@ -143,7 +143,9 @@ def main():
     parts = [DEMO / "s1.mp4", DEMO / "cast.mp4", DEMO / "s2.mp4", DEMO / "s3.mp4", DEMO / "s5.mp4"]
     lst = DEMO / "concat.txt"
     lst.write_text("".join(f"file '{p}'\n" for p in parts))
-    run([FFMPEG, "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(DEMO / "silent.mp4")])
+    # re-encode: stream copying a concat of mixed segments shifts their durations
+    run([FFMPEG, "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-r", "30", "-pix_fmt", "yuv420p",
+         "-c:v", "libx264", "-crf", "19", "-preset", "medium", str(DEMO / "silent.mp4")])
     video = dur(DEMO / "silent.mp4")
     audio = dur(DEMO / "narration2.wav")
 
@@ -151,12 +153,12 @@ def main():
     filters = []
     for i, cue in enumerate(cues, start=1):
         txt = DEMO / f"cue{i:02d}.txt"
-        txt.write_text("\n".join(wrap(cue["text"], 56)))
+        txt.write_text("\n".join(wrap(cue["text"], 74)))
         # gte*lte instead of between(a,b): commas inside an expression would split the filter chain
         filters.append(
             "drawtext=fontfile=" + MONO + ":textfile=" + str(txt) +
-            ":fontsize=23:fontcolor=0xEFE9DC:box=1:boxcolor=0x15130F@0.97:boxborderw=16" +
-            ":x=(w-text_w)/2:y=h-text_h-36" +
+            ":fontsize=17:fontcolor=0xEFE9DC:box=1:boxcolor=0x14120F@0.97:boxborderw=14" +
+            ":x=(w-text_w)/2:y=h-text_h-30" +
             f":enable='between(t\\,{cue['start']}\\,{cue['end']})'"
         )
     run([FFMPEG, "-y", "-i", str(DEMO / "silent.mp4"),

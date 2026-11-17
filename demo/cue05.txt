@@ -1,2 +1,2 @@
-It watches a swap on both chains, holds both prices in
-its own state, and measures the gap.
+It watches a swap on both chains, holds both prices in its own state, and
+measures the gap.
