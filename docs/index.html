@@ -136,6 +136,13 @@
     font-family:var(--mono);font-size:11px;color:var(--muted)}
   footer a{color:var(--ink-2)}
   .err{color:var(--oxide)}
+  .offline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 20px;
+    border:1px solid var(--oxide);border-left-width:3px;padding:12px 14px;
+    font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--ink)}
+  .offline .lamp{width:8px;height:8px;border-radius:50%;background:var(--oxide);flex:0 0 auto}
+  .offline button{font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--oxide);background:none;border:1px solid var(--oxide);padding:5px 10px;cursor:pointer}
+  .offline button:hover{background:var(--oxide);color:var(--paper)}
 
   @media (max-width:900px){
     .shell{grid-template-columns:1fr}
@@ -198,13 +205,18 @@
       uni <button id="aUni" data-copy>···</button>
     </div>
     <h2 style="margin-top:22px">Check it</h2>
-    <p class="note">Every number on this page is read from the three chains in your browser. No backend,
-      no cached snapshot.</p>
+    <p class="note">Every number on this page is read from the three chains in your browser. No backend.
+      If a chain cannot be reached, the page falls back to the recorded run and says so at the top.</p>
     <p class="note"><a href="https://github.com/farhanqaz/second-guard">source</a> ·
       <a href="demo.mp4">59s demo</a></p>
   </aside>
 
   <main>
+    <div class="offline" id="offline" hidden>
+      <span class="lamp" aria-hidden="true"></span>
+      <span id="offlineMsg"></span>
+      <button id="retry" type="button">retry live</button>
+    </div>
     <section class="band">
       <div class="bhead"><span class="bnum">01</span><h2>Parity</h2>
         <span class="meta" id="blockNote">base block ···</span></div>
@@ -314,6 +326,58 @@ const short = a => a.slice(0,6) + "…" + a.slice(-4);
 const hexKey = n => n.toString(16).padStart(64,"0");
 const price = v => (Number(v)/1e18).toFixed(4);
 const pct = v => (Number(v)/100).toFixed(2) + "%";
+
+// The recorded run, used only when a chain cannot be reached. Captured from the chains on 2026-11-17.
+const SNAPSHOT = {
+  basePx:1321982499999999999, uniPx:1001997996999999999,
+  baseRa:1150000000000000000000, baseRb:869905615240746379018, baseSw:1,
+  uniRa:1001000000000000000000, uniRb:999003993018960096784, uniSw:1,
+  thr:500, trips:1, armed:1, bps:2753,
+  baseBlock:59914220, uniBlock:68052285, sourceBlock:59914213,
+  when:"2026-11-17 08:38 UTC"
+};
+let live = true, fails = 0;
+
+function showOffline(reason){
+  $("offlineMsg").textContent = "Chain unreachable (" + reason + "). Showing the recorded run of " +
+    SNAPSHOT.when + ", base block " + SNAPSHOT.baseBlock + ".";
+  $("offline").hidden = false;
+}
+
+function renderSnapshot(){
+  const s = SNAPSHOT;
+  $("pBase").textContent = price(s.basePx); $("pUni").textContent = price(s.uniPx);
+  $("sBase").textContent = "reserves " + (s.baseRa/1e18).toFixed(0) + " / " + (s.baseRb/1e18).toFixed(0) + " · swaps " + s.baseSw;
+  $("sUni").textContent  = "reserves " + (s.uniRa/1e18).toFixed(0)  + " / " + (s.uniRb/1e18).toFixed(0)  + " · swaps " + s.uniSw;
+  $("bps").textContent = s.bps + " bps";
+  $("blockNote").textContent = "recorded run · base block " + s.baseBlock;
+  $("tPriceB").textContent = price(s.basePx); $("tPriceU").textContent = price(s.uniPx);
+  $("tResB").textContent = (s.baseRa/1e18).toFixed(0) + " / " + (s.baseRb/1e18).toFixed(0);
+  $("tResU").textContent = (s.uniRa/1e18).toFixed(0) + " / " + (s.uniRb/1e18).toFixed(0);
+  $("tSwB").textContent = s.baseSw; $("tSwU").textContent = s.uniSw;
+  const sb = $("tStateB"), su = $("tStateU");
+  sb.textContent = "paused"; sb.className = "state s";
+  su.textContent = "paused"; su.className = "state s";
+  $("rThr").textContent = pct(s.thr); $("tolBps").textContent = s.thr;
+  $("rStale").textContent = "600 s"; $("rCool").textContent = "60 s";
+  $("rArmed").textContent = "yes"; $("rTrips").textContent = s.trips;
+  const tag = $("tag"); tag.textContent = "recorded"; tag.className = "tag stop";
+  state.threshold = s.thr;
+  drawMarkers(s.basePx, s.uniPx); drawBand();
+}
+
+function paintJournal(rows, meta){
+  $("journal").innerHTML =
+    '<div class="jrow head"><span>time</span><span>chain</span><span>callback</span><span class="bps">bps</span><span>block</span></div>' +
+    rows.slice(0,6).map(r => {
+      const cfg = r.chain === "base" ? CFG.base : CFG.uni;
+      const t = new Date(r.ts*1000).toISOString().slice(11,19);
+      return '<div class="jrow"><span class="t">' + t + '</span><span class="c">' + r.chain + '</span>' +
+        '<span class="tx"><a href="' + cfg.explorer + '/tx/' + r.tx + '" target="_blank" rel="noreferrer">' + short(r.tx) + '</a></span>' +
+        '<span class="bps">' + r.bps + '</span><span class="b">' + r.block + '</span></div>';
+    }).join("");
+  $("jMeta").textContent = meta;
+}
 
 async function rpc(url, method, params){
   const r = await fetch(url,{method:"POST",headers:{"content-type":"application/json"},
@@ -435,8 +499,17 @@ async function tick(){
 
     drawMarkers(bPx, uPx);
     drawBand();
+    fails = 0;
+    if(!live){ live = true; $("offline").hidden = true; }
   }catch(e){
-    $("blockNote").innerHTML = '<span class="err">rpc: ' + e.message + "</span>";
+    fails++;
+    if(!live || fails >= 2){
+      live = false;
+      renderSnapshot();
+      showOffline(e.message);
+    }else{
+      $("blockNote").innerHTML = '<span class="err">rpc: ' + e.message + "</span>";
+    }
   }
 }
 
@@ -461,18 +534,11 @@ async function journal(){
     for(const k of KNOWN) if(!seen.has(k.tx.toLowerCase())) rows.push({...k});
     rows.sort((a,b) => b.ts - a.ts);
 
-    $("journal").innerHTML =
-      '<div class="jrow head"><span>time</span><span>chain</span><span>callback</span><span class="bps">bps</span><span>block</span></div>' +
-      rows.slice(0,6).map(r => {
-        const cfg = r.chain === "base" ? CFG.base : CFG.uni;
-        const t = new Date(r.ts*1000).toISOString().slice(11,19);
-        return '<div class="jrow"><span class="t">' + t + '</span><span class="c">' + r.chain + '</span>' +
-          '<span class="tx"><a href="' + cfg.explorer + '/tx/' + r.tx + '" target="_blank" rel="noreferrer">' + short(r.tx) + '</a></span>' +
-          '<span class="bps">' + r.bps + '</span><span class="b">' + r.block + '</span></div>';
-      }).join("");
-    $("jMeta").textContent = rows.length + " callback(s) in window";
+    paintJournal(rows, rows.length + " callback(s) in window");
   }catch(e){
-    $("journal").innerHTML = '<div class="empty err">journal: ' + e.message + "</div>";
+    live = false;
+    paintJournal(KNOWN.slice().sort((a,b) => b.ts - a.ts), KNOWN.length + " recorded callback(s)");
+    showOffline(e.message);
   }
 }
 
@@ -500,6 +566,10 @@ document.querySelectorAll("[data-copy]").forEach(b => {
     try{ await navigator.clipboard.writeText(b.textContent.trim()); b.textContent = "copied"; setTimeout(() => location.reload(), 700); }
     catch(e){}
   });
+});
+$("retry").addEventListener("click", () => {
+  fails = 0; $("offline").hidden = true; $("blockNote").textContent = "base block ···";
+  tick(); journal();
 });
 $("aGuard").textContent = CFG.lasna.guard;
 $("aBase").textContent = CFG.base.pool;

@@ -103,7 +103,8 @@ tools/render_film.py       builds docs/demo.mp4 from the cast, the cards, the st
 tools/sync_page.py         rewrites the page config from demo.json and guard_result.json
 tools/sync_docs.py         rewrites the address and evidence tables in README and SUBMISSION
 tools/audit.py             links, on-chain truth, document consistency, video, repo hygiene
-docs/index.html            the live page (reads the three chains directly from the browser)
+docs/index.html            the live page (reads the three chains directly from the browser;
+                           falls back to the recorded run, labelled, if a chain is unreachable)
 branding/                  logo exports: icon, avatar, lockups and svg, from tools/export_logo.py
 scripts/verify.sh          one command, no wallet, exit code
 ```
